@@ -1,0 +1,179 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PalcoGyn | Talentos, Eventos e Conexões</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #080e22;
+    color: white;
+}
+
+header {
+    padding: 22px 7%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #263052;
+}
+
+.logo {
+    font-size: 27px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.logo span {
+    color: #8b5cf6;
+}
+
+header small {
+    color: #a5b4fc;
+    letter-spacing: 2px;
+}
+
+.hero {
+    text-align: center;
+    padding: 75px 20px 45px;
+}
+
+.hero h1 {
+    font-size: 42px;
+    margin-bottom: 15px;
+}
+
+.hero h1 span {
+    color: #8b5cf6;
+}
+
+.hero p {
+    color: #b8c1dc;
+    font-size: 17px;
+    line-height: 1.6;
+}
+
+.cards {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    flex-wrap: wrap;
+    padding: 25px 20px 70px;
+}
+
+.card {
+    background: #121c38;
+    border: 1px solid #34416a;
+    border-radius: 18px;
+    padding: 32px;
+    width: 310px;
+    text-align: center;
+}
+
+.card h2 {
+    margin-top: 10px;
+}
+
+.card p {
+    color: #b8c1dc;
+    line-height: 1.5;
+}
+
+.icon {
+    font-size: 48px;
+}
+
+button {
+    background: linear-gradient(90deg, #7045e8, #2786ed);
+    color: white;
+    border: 0;
+    border-radius: 9px;
+    padding: 14px 22px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 15px;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+footer {
+    text-align: center;
+    padding: 25px;
+    color: #8995b8;
+    border-top: 1px solid #263052;
+}
+
+@media(max-width: 600px) {
+    .hero h1 {
+        font-size: 30px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">PALCO<span>GYN</span></div>
+    <small>TALENTOS • EVENTOS • CONEXÕES</small>
+</header>
+
+<section class="hero">
+    <h1>Seu talento merece um <span>palco!</span></h1>
+
+    <p>
+        Descubra artistas, encontre oportunidades
+        e conecte talentos aos melhores eventos.
+        <br>
+        O próximo grande encontro começa aqui.
+    </p>
+</section>
+
+<section class="cards">
+
+    <div class="card">
+        <div class="icon">🎤</div>
+        <h2>Sou Artista</h2>
+        <p>
+            Divulgue seu talento, apresente seu trabalho
+            e receba propostas para shows e eventos.
+        </p>
+        <button onclick="alert('Cadastro de artistas será conectado ao Supabase na próxima etapa.')">
+            Quero divulgar meu talento
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="icon">🎪</div>
+        <h2>Sou Contratante</h2>
+        <p>
+            Encontre cantores, bandas e músicos
+            para bares, restaurantes e eventos.
+        </p>
+        <button onclick="alert('Cadastro de contratantes será conectado ao Supabase na próxima etapa.')">
+            Quero contratar artistas
+        </button>
+    </div>
+
+</section>
+
+<footer>
+    PALCOGYN © 2026
+    <br>
+    Descubra novos talentos.
+</footer>
+
+</body>
+</html>
