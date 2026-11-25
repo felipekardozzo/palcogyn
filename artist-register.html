@@ -66,40 +66,89 @@ const SUPABASE_URL = "https://nocwkiobwjpuygsbnyhn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_L0JjrfD0Zia0zjQ8opWnXA_Qzxwgp-p";
 const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-document.getElementById("artistForm").addEventListener("submit",async function(e){
-e.preventDefault();
-const mensagem=document.getElementById("mensagem");
-mensagem.textContent="Salvando cadastro...";
+const formulario = document.getElementById("artistForm");
+const mensagem = document.getElementById("mensagem");
+const botao = formulario.querySelector('button[type="submit"]');
 
-try{
-const {data:{user},error:authError}=await db.auth.getUser();
-if(authError) throw authError;
-if(!user) throw new Error("Faça login antes de cadastrar seu perfil artístico.");
+async function carregarCadastro(){
+  try{
+    const {data:{user},error:authError}=await db.auth.getUser();
 
-const musicStyles=document.getElementById("music_styles").value
-.split(",").map(x=>x.trim()).filter(Boolean);
+    if(authError) throw authError;
+    if(!user) throw new Error("Faça login antes de acessar seu cadastro.");
 
-const perfil={
-user_id:user.id,
-artist_name:document.getElementById("artist_name").value.trim(),
-artist_type:document.getElementById("artist_type").value,
-performance_type:document.getElementById("performance_type").value.trim(),
-music_styles:musicStyles,
-bio:document.getElementById("bio").value.trim(),
-city:document.getElementById("city").value.trim(),
-state:document.getElementById("state").value.trim().toUpperCase(),
-performance_fee:Number(document.getElementById("performance_fee").value),
-sound_setup:document.getElementById("sound_setup").value.trim(),
-};
+    const {data:perfil,error}=await db
+      .from("artist_profiles")
+      .select("artist_name,artist_type,performance_type,music_styles,bio,city,state,performance_fee,sound_setup")
+      .eq("user_id",user.id)
+      .maybeSingle();
 
-const {error}=await db.from("artist_profiles").upsert(perfil,{onConflict:"user_id"});
-if(error) throw error;
+    if(error) throw error;
 
-mensagem.textContent="Cadastro artístico salvo com sucesso!";
-}catch(error){
-mensagem.textContent="Não foi possível salvar: "+error.message;
+    if(perfil){
+      document.getElementById("artist_name").value=perfil.artist_name||"";
+      document.getElementById("artist_type").value=perfil.artist_type||"";
+      document.getElementById("performance_type").value=perfil.performance_type||"";
+      document.getElementById("music_styles").value=(perfil.music_styles||[]).join(", ");
+      document.getElementById("bio").value=perfil.bio||"";
+      document.getElementById("city").value=perfil.city||"";
+      document.getElementById("state").value=perfil.state||"";
+      document.getElementById("performance_fee").value=perfil.performance_fee??"";
+      document.getElementById("sound_setup").value=perfil.sound_setup||"";
+
+      botao.textContent="Atualizar cadastro";
+      mensagem.textContent="Seu cadastro foi carregado. Você pode editar seus dados.";
+    }else{
+      botao.textContent="Salvar cadastro";
+      mensagem.textContent="Preencha seus dados para criar seu perfil artístico.";
+    }
+
+  }catch(error){
+    mensagem.textContent="Erro ao carregar cadastro: "+error.message;
+  }
 }
+
+formulario.addEventListener("submit",async function(e){
+  e.preventDefault();
+  mensagem.textContent="Salvando cadastro...";
+
+  try{
+    const {data:{user},error:authError}=await db.auth.getUser();
+
+    if(authError) throw authError;
+    if(!user) throw new Error("Faça login antes de cadastrar seu perfil artístico.");
+
+    const musicStyles=document.getElementById("music_styles").value
+      .split(",").map(x=>x.trim()).filter(Boolean);
+
+    const perfil={
+      user_id:user.id,
+      artist_name:document.getElementById("artist_name").value.trim(),
+      artist_type:document.getElementById("artist_type").value,
+      performance_type:document.getElementById("performance_type").value.trim(),
+      music_styles:musicStyles,
+      bio:document.getElementById("bio").value.trim(),
+      city:document.getElementById("city").value.trim(),
+      state:document.getElementById("state").value.trim().toUpperCase(),
+      performance_fee:Number(document.getElementById("performance_fee").value),
+      sound_setup:document.getElementById("sound_setup").value.trim()
+    };
+
+    const {error}=await db
+      .from("artist_profiles")
+      .upsert(perfil,{onConflict:"user_id"});
+
+    if(error) throw error;
+
+    botao.textContent="Atualizar cadastro";
+    mensagem.textContent="Cadastro artístico atualizado com sucesso!";
+
+  }catch(error){
+    mensagem.textContent="Não foi possível salvar: "+error.message;
+  }
 });
+
+carregarCadastro();
 </script>
 </body>
 </html>
