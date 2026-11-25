@@ -112,14 +112,7 @@ footer{text-align:center;color:#8998ad;padding:25px;font-size:12px}
 <button onclick="voltarPainel()">← Voltar ao painel</button>
 <h2>Gerenciamento de artistas</h2>
 <p class="muted">Cadastros encontrados na plataforma</p>
-<input id="artistSearch" placeholder="Pesquisar nome artístico ou cidade..." oninput="filtrarArtistas()">
-<input
-  type="text"
-  id="artistSearch"
-  placeholder="Pesquisar por ID PALCOGYN ou nome artístico..."
-  oninput="renderArtists()"
-  style="width:100%;padding:12px;margin-bottom:15px;border-radius:8px;border:1px solid #ccc;"
->
+<input id="artistSearch" placeholder="Pesquisar por ID PALCOGYN, nome artístico ou cidade..." oninput="filtrarArtistas()">
 
 <div id="artistMessage" class="muted">Carregando artistas...</div>
 <div class="tablewrap">
@@ -220,7 +213,7 @@ async function verificarAcesso(){
   if(adminError) throw adminError;
 
   if(!admin || admin.admin_role!=="super_admin" || admin.is_active!==true){
-   document.getElementById("loading").classList.add("hidden");
+   document.getElementById("loading").class.add("hidden");
    document.getElementById("denied").classList.remove("hidden");
    return;
   }
