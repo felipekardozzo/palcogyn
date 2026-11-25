@@ -3,33 +3,36 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PalcoGyn | Painel Administrativo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PalcoGyn | Administração</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101827;color:#fff;font-family:Arial,sans-serif}
-header{background:#17243a;padding:22px;text-align:center;border-bottom:2px solid #e4a52b}
-header h1{margin:0;color:#f5b83d;font-size:27px}
-header p{margin:7px 0 0;color:#c5d0df;font-size:12px;letter-spacing:2px}
-main{max-width:1050px;margin:30px auto;padding:15px}
-.welcome{background:#1c2b43;padding:22px;border-radius:12px;margin-bottom:22px}
-.welcome h2{margin-top:0;color:#f5b83d}
+body{margin:0;background:#101827;color:white;font-family:Arial,sans-serif}
+header{background:#17243a;padding:22px;text-align:center;border-bottom:2px solid #e5a62e}
+header h1{margin:0;color:#f5b83d}
+header p{color:#c5d0df;font-size:12px;letter-spacing:2px}
+main{max-width:1100px;margin:25px auto;padding:15px}
+.welcome,.card,.panel{background:#1c2b43;border:1px solid #35445c;border-radius:12px;padding:20px;margin-bottom:18px}
+h2,h3{color:#f5b83d}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:15px}
-.card{background:#1c2b43;border:1px solid #35445c;border-radius:12px;padding:22px;min-height:135px}
-.card h3{color:#f5b83d;margin-top:0}
 .card p{color:#c5d0df;font-size:14px;line-height:1.5}
-.status{color:#76df9b;font-weight:bold}
-button{background:#e5a62e;border:0;border-radius:7px;padding:12px 20px;font-weight:bold;cursor:pointer}
+button{background:#e5a62e;color:#17243a;border:0;border-radius:7px;padding:11px 17px;font-weight:bold;cursor:pointer;margin:4px 0}
 button:hover{background:#ffc34d}
 #logout{background:#b83b3b;color:white}
-#message{background:#1c2b43;padding:20px;border-radius:10px;line-height:1.6}
 .hidden{display:none}
-footer{text-align:center;color:#8998ad;padding:30px;font-size:12px}
+.status{color:#76df9b;font-weight:bold}
+input{width:100%;padding:12px;border-radius:7px;border:1px solid #53647b;background:#101827;color:white;margin:8px 0 15px}
+table{width:100%;border-collapse:collapse;min-width:700px}
+th,td{text-align:left;padding:12px;border-bottom:1px solid #35445c;font-size:13px}
+th{color:#f5b83d}
+.tablewrap{overflow-x:auto}
+.muted{color:#b8c5d7}
+#message{padding:18px;background:#1c2b43;border-radius:10px}
+footer{text-align:center;color:#8998ad;padding:25px;font-size:12px}
 </style>
 </head>
 <body>
-
 <header>
 <h1>PALCOGYN</h1>
 <p>TALENTOS • EVENTOS • CONEXÕES</p>
@@ -47,63 +50,78 @@ footer{text-align:center;color:#8998ad;padding:30px;font-size:12px}
 </div>
 
 <div id="dashboard" class="hidden">
-<div class="welcome">
-<h2>Bem-vindo ao Painel Administrativo!</h2>
-<p>Olá, <strong id="adminName">Administrador</strong>.</p>
+<section class="welcome">
+<h2>Painel Administrativo</h2>
+<p>Bem-vindo, <strong id="adminName"></strong></p>
 <p class="status">● Super Administrador autenticado</p>
-<p>Você está acessando a área exclusiva de gerenciamento do PalcoGyn.</p>
 <button id="logout">Sair da conta</button>
-</div>
+</section>
 
 <div class="grid">
 <div class="card">
 <h3>Artistas</h3>
-<p>Gerenciamento de cantores, músicos, bandas e DJs.</p>
-<strong>Em desenvolvimento</strong>
+<p>Consultar os artistas cadastrados na plataforma.</p>
+<button onclick="abrirArtistas()">Gerenciar artistas</button>
 </div>
-
 <div class="card">
 <h3>Contratantes</h3>
 <p>Gerenciamento de bares, restaurantes e organizadores.</p>
 <strong>Em desenvolvimento</strong>
 </div>
-
 <div class="card">
 <h3>Contratações</h3>
-<p>Acompanhamento de propostas, negociações e eventos.</p>
+<p>Propostas, negociações e eventos.</p>
 <strong>Em desenvolvimento</strong>
 </div>
-
 <div class="card">
 <h3>Financeiro</h3>
-<p>Comissões, pagamentos e movimentações da plataforma.</p>
+<p>Comissões e pagamentos da plataforma.</p>
 <strong>Área exclusiva do Super Administrador</strong>
 </div>
-
 <div class="card">
 <h3>Administradores</h3>
-<p>Criação e controle de contas administrativas.</p>
+<p>Controle de acessos administrativos.</p>
 <strong>Em desenvolvimento</strong>
 </div>
-
 <div class="card">
 <h3>Fundo PalcoGyn</h3>
-<p>Incentivo financeiro a novos talentos.</p>
-<strong>Área restrita</strong>
+<p>Incentivo a novos talentos.</p>
+<strong>Área restrita — em desenvolvimento</strong>
 </div>
-
 <div class="card">
-<h3>Denúncias e ocorrências</h3>
-<p>Análise de atrasos, cancelamentos e advertências.</p>
+<h3>Ocorrências</h3>
+<p>Denúncias, atrasos e advertências.</p>
 <strong>Em desenvolvimento</strong>
 </div>
-
 <div class="card">
 <h3>Configurações</h3>
-<p>Regras, limites e funcionamento da plataforma.</p>
+<p>Regras e funcionamento da plataforma.</p>
 <strong>Em desenvolvimento</strong>
 </div>
 </div>
+
+<section id="artistsSection" class="panel hidden">
+<button onclick="voltarPainel()">← Voltar ao painel</button>
+<h2>Gerenciamento de artistas</h2>
+<p class="muted">Artistas cadastrados no PalcoGyn</p>
+<input id="artistSearch" placeholder="Pesquisar por nome artístico ou cidade..." oninput="filtrarArtistas()">
+<div id="artistMessage" class="muted">Carregando artistas...</div>
+<div class="tablewrap">
+<table id="artistTable" class="hidden">
+<thead>
+<tr>
+<th>Nome artístico</th>
+<th>Responsável</th>
+<th>Cidade</th>
+<th>Estilo musical</th>
+<th>Apresentação</th>
+<th>Cachê</th>
+</tr>
+</thead>
+<tbody id="artistRows"></tbody>
+</table>
+</div>
+</section>
 </div>
 </main>
 
@@ -112,70 +130,125 @@ footer{text-align:center;color:#8998ad;padding:30px;font-size:12px}
 <script>
 const SUPABASE_URL = "https://nocwkiobwjpuygsbnyhn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_L0JjrfD0Zia0zjQ8opWnXA_Qzxwgp-p";
+const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let artistas = [];
 
 async function verificarAcesso(){
-    try {
-        const {data: sessionData, error: sessionError} =
-            await db.auth.getSession();
+ try{
+  const {data,error} = await db.auth.getSession();
+  if(error) throw error;
 
-        if(sessionError || !sessionData.session){
-            document.getElementById("loading").innerText =
-                "Você precisa entrar primeiro no PalcoGyn.";
-            setTimeout(() => {
-                location.href = "index.html";
-            }, 2500);
-            return;
-        }
+  if(!data.session){
+   document.getElementById("loading").innerText="Faça login primeiro no PalcoGyn.";
+   setTimeout(()=>location.href="index.html",2500);
+   return;
+  }
 
-        const user = sessionData.session.user;
+  const user=data.session.user;
 
-        const {data: admin, error: adminError} = await db
-            .from("admin_users")
-            .select("admin_role,is_active")
-            .eq("user_id", user.id)
-            .maybeSingle();
+  const {data:admin,error:adminError}=await db
+   .from("admin_users")
+   .select("admin_role,is_active")
+   .eq("user_id",user.id)
+   .maybeSingle();
 
-        if(adminError){
-            throw new Error("Não foi possível verificar suas permissões: " + adminError.message);
-        }
+  if(adminError) throw adminError;
 
-        if(!admin || admin.admin_role !== "super_admin" || admin.is_active !== true){
-            document.getElementById("loading").classList.add("hidden");
-            document.getElementById("denied").classList.remove("hidden");
-            return;
-        }
+  if(!admin || admin.admin_role!=="super_admin" || admin.is_active!==true){
+   document.getElementById("loading").classList.add("hidden");
+   document.getElementById("denied").classList.remove("hidden");
+   return;
+  }
 
-        const {data: profile, error: profileError} = await db
-            .from("profiles")
-            .select("nome")
-            .eq("id", user.id)
-            .maybeSingle();
+  const {data:profile,error:profileError}=await db
+   .from("profiles")
+   .select("nome")
+   .eq("id",user.id)
+   .maybeSingle();
 
-        if(profileError){
-            throw new Error("Não foi possível carregar seu perfil: " + profileError.message);
-        }
+  if(profileError) throw profileError;
 
-        document.getElementById("adminName").innerText =
-            profile?.nome || "Super Administrador";
+  document.getElementById("adminName").innerText=profile?.nome || "Super Administrador";
+  document.getElementById("loading").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
 
-        document.getElementById("loading").classList.add("hidden");
-        document.getElementById("dashboard").classList.remove("hidden");
-
-    } catch(error) {
-        document.getElementById("loading").innerText =
-            "Erro ao verificar acesso: " + error.message;
-    }
+ }catch(error){
+  document.getElementById("loading").innerText="Erro ao verificar acesso: "+error.message;
+ }
 }
 
-document.getElementById("logout").addEventListener("click", async function(){
-    const {error} = await db.auth.signOut();
-    if(error){
-        alert("Não foi possível sair: " + error.message);
-        return;
-    }
-    location.href = "index.html";
+async function abrirArtistas(){
+ document.getElementById("artistsSection").classList.remove("hidden");
+ document.getElementById("artistMessage").innerText="Carregando artistas...";
+ document.getElementById("artistTable").classList.add("hidden");
+
+ const {data,error}=await db
+  .from("artist_profiles")
+  .select("user_id,artist_name,artist_type,performance_type,music_styles,city,state,performance_fee,profiles(nome)")
+  .order("artist_name",{ascending:true});
+
+ if(error){
+  document.getElementById("artistMessage").innerText="Erro ao carregar artistas: "+error.message;
+  return;
+ }
+
+ artistas=data || [];
+ mostrarArtistas(artistas);
+}
+
+function mostrarArtistas(lista){
+ const tbody=document.getElementById("artistRows");
+ tbody.innerHTML="";
+
+ if(lista.length===0){
+  document.getElementById("artistMessage").innerText="Nenhum artista cadastrado até o momento.";
+  document.getElementById("artistTable").classList.add("hidden");
+  return;
+ }
+
+ lista.forEach(a=>{
+  const tr=document.createElement("tr");
+  const nome=a.artist_name || "Não informado";
+  const responsavel=a.profiles?.nome || "Não informado";
+  const cidade=[a.city,a.state].filter(Boolean).join(" / ") || "Não informado";
+  const estilos=Array.isArray(a.music_styles)?a.music_styles.join(", "):(a.music_styles || "Não informado");
+  const apresentacao=a.performance_type || a.artist_type || "Não informado";
+  const cache=a.performance_fee!=null
+   ? Number(a.performance_fee).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})
+   : "Não informado";
+
+  [nome,responsavel,cidade,estilos,apresentacao,cache].forEach(valor=>{
+   const td=document.createElement("td");
+   td.textContent=valor;
+   tr.appendChild(td);
+  });
+  tbody.appendChild(tr);
+ });
+
+ document.getElementById("artistMessage").innerText="Total de artistas encontrados: "+lista.length;
+ document.getElementById("artistTable").classList.remove("hidden");
+}
+
+function filtrarArtistas(){
+ const termo=document.getElementById("artistSearch").value.toLowerCase();
+ const filtrados=artistas.filter(a=>
+  (a.artist_name || "").toLowerCase().includes(termo) ||
+  (a.city || "").toLowerCase().includes(termo) ||
+  (a.profiles?.nome || "").toLowerCase().includes(termo)
+ );
+ mostrarArtistas(filtrados);
+}
+
+function voltarPainel(){
+ document.getElementById("artistsSection").classList.add("hidden");
+ document.getElementById("artistSearch").value="";
+}
+
+document.getElementById("logout").addEventListener("click",async()=>{
+ const {error}=await db.auth.signOut();
+ if(error){alert("Erro ao sair: "+error.message);return;}
+ location.href="index.html";
 });
 
 verificarAcesso();
