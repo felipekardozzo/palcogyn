@@ -529,6 +529,34 @@ async function iniciar(){
      }
 
      lista.appendChild(bloco);
+     bloco.addEventListener("click",function(){
+
+ const lightbox=document.getElementById("lightbox");
+ const area=document.getElementById("lightboxConteudo");
+
+ area.innerHTML="";
+
+ if(item.media_type==="video"){
+
+  const video=document.createElement("video");
+  video.src=arquivo.signedUrl;
+  video.controls=true;
+  video.autoplay=true;
+  video.playsInline=true;
+  area.appendChild(video);
+
+ }else{
+
+  const imagem=document.createElement("img");
+  imagem.src=arquivo.signedUrl;
+  imagem.alt="Imagem ampliada do portfólio";
+  area.appendChild(imagem);
+
+ }
+
+ lightbox.classList.add("ativo");
+
+});
 
     }
 
@@ -552,7 +580,39 @@ async function iniciar(){
  }
 
 }
+// FECHAR VISUALIZADOR
 
+document.getElementById("fecharLightbox").addEventListener("click",function(){
+
+ const lightbox=document.getElementById("lightbox");
+ const area=document.getElementById("lightboxConteudo");
+
+ lightbox.classList.remove("ativo");
+ area.innerHTML="";
+
+});
+
+document.getElementById("lightbox").addEventListener("click",function(event){
+
+ if(event.target===this){
+
+  this.classList.remove("ativo");
+  document.getElementById("lightboxConteudo").innerHTML="";
+
+ }
+
+});
+
+document.addEventListener("keydown",function(event){
+
+ if(event.key==="Escape"){
+
+  document.getElementById("lightbox").classList.remove("ativo");
+  document.getElementById("lightboxConteudo").innerHTML="";
+
+ }
+
+});
 iniciar();
 </script>
 
