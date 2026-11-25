@@ -355,13 +355,58 @@ async function iniciarMidias(){
         bloco.querySelector("img").src=arquivo.signedUrl;
       }
 
-      if(item.is_featured){
-        const destaque=document.createElement("p");
-        destaque.textContent="Publicação em destaque";
-        bloco.appendChild(destaque);
-      }
+     if(item.is_featured){
+  const destaque=document.createElement("p");
+  destaque.textContent="Publicação em destaque";
+  bloco.appendChild(destaque);
+}
 
-      lista.appendChild(bloco);
+// BOTÃO PARA EXCLUIR A PUBLICAÇÃO
+
+const excluir=document.createElement("button");
+excluir.type="button";
+excluir.textContent="Excluir publicação";
+excluir.style.background="#dc2626";
+excluir.style.marginTop="12px";
+
+excluir.addEventListener("click",async()=>{
+
+  if(!confirm("Deseja realmente excluir esta foto ou vídeo do portfólio?")){
+    return;
+  }
+
+  excluir.disabled=true;
+  avisoPortfolio.textContent="Excluindo publicação...";
+
+  const {error:remocao}=await db.storage
+    .from("artist-media")
+    .remove([item.media_url]);
+
+  if(remocao){
+    avisoPortfolio.textContent="Erro ao excluir arquivo: "+remocao.message;
+    excluir.disabled=false;
+    return;
+  }
+
+  const {error:exclusao}=await db
+    .from("artist_portfolio")
+    .delete()
+    .eq("id",item.id)
+    .eq("artist_id",user.id);
+
+  if(exclusao){
+    avisoPortfolio.textContent="Arquivo removido, mas houve erro ao atualizar o portfólio: "+exclusao.message;
+    excluir.disabled=false;
+    return;
+  }
+
+  avisoPortfolio.textContent="Publicação excluída com sucesso!";
+  await carregarPortfolio();
+
+});
+
+bloco.appendChild(excluir);
+lista.appendChild(bloco);
     }
   }
 
