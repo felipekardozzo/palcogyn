@@ -149,6 +149,18 @@ footer{text-align:center;color:#8998ad;padding:25px;font-size:12px}
 <h3>Controle administrativo</h3>
 <div id="adminFields" class="detailgrid"></div>
 
+<div id="adminEditArea" class="hidden">
+  <h3>Editar dados administrativos</h3>
+
+  <label for="editSoundSetup">Estrutura de som</label>
+  <textarea id="editSoundSetup" rows="4"></textarea>
+
+  <label for="editStorageQuota">Limite de armazenamento (MB)</label>
+  <input id="editStorageQuota" type="number" min="1" value="100">
+
+  <button type="button" onclick="salvarDadosArtista()">Salvar alterações</button>
+</div>
+
 <h3>Contato e responsável</h3>
 <div id="contactFields" class="detailgrid"></div>
 
