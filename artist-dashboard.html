@@ -212,7 +212,7 @@ document.getElementById("enviarPortfolio").addEventListener("click",async()=>{
     .from("artist_portfolio")
     .insert({
       artist_id:user.id,
-      media_type:ehVideo?"video":"image",
+      media_type:ehVideo?"video":"performance_photo",
       media_url:caminho,
       is_featured:false
     });
