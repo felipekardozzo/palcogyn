@@ -159,7 +159,8 @@ async function carregarPortfolio(){
 
 carregarPortfolio();
 
-document.getElementById("enviarPortfolio").addEventListener("click",async()=>{
+});
+  
   const arquivo=document.getElementById("arquivoPortfolio").files[0];
   const aviso=document.getElementById("mensagemPortfolio");
 
@@ -233,7 +234,6 @@ document.getElementById("enviarPortfolio").addEventListener("click",async()=>{
   }
 }
 
-    document.getElementById("enviarFoto").addEventListener("click",async()=>{
   const arquivo=document.getElementById("arquivoFoto").files[0];
   const aviso=document.getElementById("mensagemFoto");
 
