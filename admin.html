@@ -20,19 +20,27 @@ h2,h3{color:#f5b83d}
 button{background:#e5a62e;color:#17243a;border:0;border-radius:7px;padding:11px 17px;font-weight:bold;cursor:pointer;margin:4px 0}
 button:hover{background:#ffc34d}
 #logout{background:#b83b3b;color:white}
-.hidden{display:none}
+.hidden{display:none!important}
 .status{color:#76df9b;font-weight:bold}
 input{width:100%;padding:12px;border-radius:7px;border:1px solid #53647b;background:#101827;color:white;margin:8px 0 15px}
-table{width:100%;border-collapse:collapse;min-width:700px}
-th,td{text-align:left;padding:12px;border-bottom:1px solid #35445c;font-size:13px}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th,td{text-align:left;padding:12px;border-bottom:1px solid #35445c;font-size:13px;vertical-align:top}
 th{color:#f5b83d}
 .tablewrap{overflow-x:auto}
 .muted{color:#b8c5d7}
-#message{padding:18px;background:#1c2b43;border-radius:10px}
+.detailgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.detail{background:#101827;border:1px solid #35445c;border-radius:8px;padding:13px;overflow-wrap:anywhere}
+.detail small{display:block;color:#9eafc5;margin-bottom:7px}
+.detail strong{font-size:14px}
+.mediaGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.mediaItem{background:#101827;padding:10px;border-radius:8px;overflow:hidden}
+.mediaItem img,.mediaItem video{width:100%;max-height:240px;object-fit:contain;border-radius:6px}
+.mediaItem p{font-size:13px;overflow-wrap:anywhere}
 footer{text-align:center;color:#8998ad;padding:25px;font-size:12px}
 </style>
 </head>
 <body>
+
 <header>
 <h1>PALCOGYN</h1>
 <p>TALENTOS • EVENTOS • CONEXÕES</p>
@@ -42,7 +50,7 @@ footer{text-align:center;color:#8998ad;padding:25px;font-size:12px}
 <div id="loading">Verificando acesso administrativo...</div>
 
 <div id="denied" class="hidden">
-<div id="message">
+<div class="panel">
 <h2>Acesso não autorizado</h2>
 <p>Sua conta não possui autorização de Super Administrador.</p>
 <button onclick="location.href='index.html'">Voltar ao início</button>
@@ -60,7 +68,7 @@ footer{text-align:center;color:#8998ad;padding:25px;font-size:12px}
 <div class="grid">
 <div class="card">
 <h3>Artistas</h3>
-<p>Consultar os artistas cadastrados na plataforma.</p>
+<p>Consultar cadastros e portfólios dos artistas.</p>
 <button onclick="abrirArtistas()">Gerenciar artistas</button>
 </div>
 <div class="card">
@@ -103,8 +111,8 @@ footer{text-align:center;color:#8998ad;padding:25px;font-size:12px}
 <section id="artistsSection" class="panel hidden">
 <button onclick="voltarPainel()">← Voltar ao painel</button>
 <h2>Gerenciamento de artistas</h2>
-<p class="muted">Artistas cadastrados no PalcoGyn</p>
-<input id="artistSearch" placeholder="Pesquisar por nome artístico ou cidade..." oninput="filtrarArtistas()">
+<p class="muted">Cadastros encontrados na plataforma</p>
+<input id="artistSearch" placeholder="Pesquisar nome artístico ou cidade..." oninput="filtrarArtistas()">
 <div id="artistMessage" class="muted">Carregando artistas...</div>
 <div class="tablewrap">
 <table id="artistTable" class="hidden">
@@ -114,12 +122,30 @@ footer{text-align:center;color:#8998ad;padding:25px;font-size:12px}
 <th>Responsável</th>
 <th>Cidade</th>
 <th>Estilo musical</th>
-<th>Apresentação</th>
 <th>Cachê</th>
+<th>Ficha</th>
 </tr>
 </thead>
 <tbody id="artistRows"></tbody>
 </table>
+</div>
+</section>
+
+<section id="artistDetails" class="panel hidden">
+<button onclick="voltarLista()">← Voltar à lista</button>
+<h2 id="detailArtistName">Ficha do artista</h2>
+<p class="muted">Consulta administrativa — somente visualização</p>
+<div id="detailMessage" class="muted">Carregando ficha...</div>
+<div id="detailContent" class="hidden">
+<h3>Dados cadastrais e artísticos</h3>
+<div id="detailFields" class="detailgrid"></div>
+<h3>Contato e responsável</h3>
+<div id="contactFields" class="detailgrid"></div>
+<h3>Equipamentos e estrutura</h3>
+<div id="equipmentFields" class="detailgrid"></div>
+<h3>Portfólio — fotos e vídeos</h3>
+<div id="portfolioMessage" class="muted">Carregando portfólio...</div>
+<div id="portfolioGrid" class="mediaGrid"></div>
 </div>
 </section>
 </div>
@@ -134,9 +160,39 @@ const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 let artistas = [];
 
+function valor(v){
+ if(v===null || v===undefined || v==="") return "Não informado";
+ if(Array.isArray(v)) return v.length ? v.join(", ") : "Não informado";
+ if(typeof v==="boolean") return v ? "Sim" : "Não";
+ return String(v);
+}
+
+function moeda(v){
+ if(v===null || v===undefined || v==="") return "Não informado";
+ const n=Number(v);
+ return Number.isFinite(n) ? n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"}) : String(v);
+}
+
+function dataFormatada(v){
+ if(!v) return "Não informada";
+ const d=new Date(v);
+ return isNaN(d.getTime()) ? String(v) : d.toLocaleString("pt-BR");
+}
+
+function campo(container,titulo,conteudo){
+ const box=document.createElement("div");
+ box.className="detail";
+ const small=document.createElement("small");
+ small.textContent=titulo;
+ const strong=document.createElement("strong");
+ strong.textContent=valor(conteudo);
+ box.append(small,strong);
+ container.appendChild(box);
+}
+
 async function verificarAcesso(){
  try{
-  const {data,error} = await db.auth.getSession();
+  const {data,error}=await db.auth.getSession();
   if(error) throw error;
 
   if(!data.session){
@@ -180,12 +236,13 @@ async function verificarAcesso(){
 
 async function abrirArtistas(){
  document.getElementById("artistsSection").classList.remove("hidden");
+ document.getElementById("artistDetails").classList.add("hidden");
  document.getElementById("artistMessage").innerText="Carregando artistas...";
  document.getElementById("artistTable").classList.add("hidden");
 
  const {data,error}=await db
   .from("artist_profiles")
-  .select("user_id,artist_name,artist_type,performance_type,music_styles,city,state,performance_fee,profiles(nome)")
+  .select("user_id,artist_name,artist_type,performance_type,music_styles,city,state,performance_fee,sound_setup,equipment_needed,equipment_owned,created_at,updated_at,storage_quota_mb")
   .order("artist_name",{ascending:true});
 
  if(error){
@@ -194,6 +251,25 @@ async function abrirArtistas(){
  }
 
  artistas=data || [];
+
+ const ids=artistas.map(a=>a.user_id);
+ let perfis={};
+
+ if(ids.length){
+  const {data:profiles,error:profileError}=await db
+   .from("profiles")
+   .select("id,nome,whatsapp,cidade,foto_url")
+   .in("id",ids);
+
+  if(profileError){
+   document.getElementById("artistMessage").innerText="Artistas carregados, mas houve erro ao consultar responsáveis: "+profileError.message;
+   return;
+  }
+
+  (profiles || []).forEach(p=>perfis[p.id]=p);
+ }
+
+ artistas=artistas.map(a=>({...a,profiles:perfis[a.user_id] || null}));
  mostrarArtistas(artistas);
 }
 
@@ -209,20 +285,26 @@ function mostrarArtistas(lista){
 
  lista.forEach(a=>{
   const tr=document.createElement("tr");
-  const nome=a.artist_name || "Não informado";
-  const responsavel=a.profiles?.nome || "Não informado";
-  const cidade=[a.city,a.state].filter(Boolean).join(" / ") || "Não informado";
-  const estilos=Array.isArray(a.music_styles)?a.music_styles.join(", "):(a.music_styles || "Não informado");
-  const apresentacao=a.performance_type || a.artist_type || "Não informado";
-  const cache=a.performance_fee!=null
-   ? Number(a.performance_fee).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})
-   : "Não informado";
+  const valores=[
+   a.artist_name,
+   a.profiles?.nome,
+   [a.city,a.state].filter(Boolean).join(" / "),
+   a.music_styles,
+   moeda(a.performance_fee)
+  ];
 
-  [nome,responsavel,cidade,estilos,apresentacao,cache].forEach(valor=>{
+  valores.forEach(v=>{
    const td=document.createElement("td");
-   td.textContent=valor;
+   td.textContent=valor(v);
    tr.appendChild(td);
   });
+
+  const td=document.createElement("td");
+  const btn=document.createElement("button");
+  btn.textContent="Ver ficha completa";
+  btn.addEventListener("click",()=>abrirFicha(a.user_id));
+  td.appendChild(btn);
+  tr.appendChild(td);
   tbody.appendChild(tr);
  });
 
@@ -240,8 +322,138 @@ function filtrarArtistas(){
  mostrarArtistas(filtrados);
 }
 
+async function abrirFicha(userId){
+ const a=artistas.find(x=>x.user_id===userId);
+ if(!a) return;
+
+ document.getElementById("artistsSection").classList.add("hidden");
+ document.getElementById("artistDetails").classList.remove("hidden");
+ document.getElementById("detailContent").classList.add("hidden");
+ document.getElementById("detailMessage").innerText="Carregando informações...";
+ document.getElementById("detailArtistName").innerText=a.artist_name || "Ficha do artista";
+
+ const dados=document.getElementById("detailFields");
+ const contato=document.getElementById("contactFields");
+ const equipamentos=document.getElementById("equipmentFields");
+ dados.innerHTML="";
+ contato.innerHTML="";
+ equipamentos.innerHTML="";
+
+ campo(dados,"Nome artístico",a.artist_name);
+ campo(dados,"Tipo de artista",a.artist_type);
+ campo(dados,"Modalidade de apresentação",a.performance_type);
+ campo(dados,"Estilos musicais",a.music_styles);
+ campo(dados,"Cidade",a.city);
+ campo(dados,"Estado",a.state);
+ campo(dados,"Cachê informado",moeda(a.performance_fee));
+ campo(dados,"Estrutura de som",a.sound_setup);
+ campo(dados,"Limite de armazenamento",valor(a.storage_quota_mb)+" MB");
+ campo(dados,"Data de cadastro",dataFormatada(a.created_at));
+ campo(dados,"Última atualização",dataFormatada(a.updated_at));
+
+ campo(contato,"Nome do responsável",a.profiles?.nome);
+ campo(contato,"WhatsApp",a.profiles?.whatsapp);
+ campo(contato,"Cidade do perfil",a.profiles?.cidade);
+
+ campo(equipamentos,"Equipamentos próprios",a.equipment_owned);
+ campo(equipamentos,"Equipamentos necessários",a.equipment_needed);
+
+ document.getElementById("detailMessage").innerText="";
+ document.getElementById("detailContent").classList.remove("hidden");
+
+ await carregarPortfolio(userId);
+}
+
+async function carregarPortfolio(userId){
+ const aviso=document.getElementById("portfolioMessage");
+ const grid=document.getElementById("portfolioGrid");
+ aviso.innerText="Carregando portfólio...";
+ grid.innerHTML="";
+
+ const {data,error}=await db
+  .from("artist_portfolio")
+  .select("id,artist_id,media_type,media_url,title,description,is_featured")
+  .eq("artist_id",userId);
+
+ if(error){
+  aviso.innerText="Não foi possível consultar o portfólio: "+error.message;
+  return;
+ }
+
+ if(!data || data.length===0){
+  aviso.innerText="Este artista ainda não possui fotos ou vídeos cadastrados.";
+  return;
+ }
+
+ for(const item of data){
+  let url=item.media_url || "";
+
+  if(url && !/^https?:\/\//i.test(url)){
+   const {data:signed,error:signedError}=await db.storage
+    .from("artist-media")
+    .createSignedUrl(url,3600);
+
+   if(signedError){
+    aviso.innerText="Alguns arquivos não puderam ser carregados. Verifique o caminho dos arquivos e as permissões.";
+    continue;
+   }
+   url=signed.signedUrl;
+  }
+
+  if(!url) continue;
+
+  const box=document.createElement("div");
+  box.className="mediaItem";
+
+  const titulo=document.createElement("p");
+  titulo.textContent=item.title || "Publicação do artista";
+  box.appendChild(titulo);
+
+  const tipo=(item.media_type || "").toLowerCase();
+  let media;
+
+  if(tipo.includes("video")){
+   media=document.createElement("video");
+   media.controls=true;
+   media.preload="metadata";
+  }else{
+   media=document.createElement("img");
+   media.alt=item.title || "Imagem do portfólio";
+   media.loading="lazy";
+  }
+
+  media.src=url;
+  box.appendChild(media);
+
+  const descricao=document.createElement("p");
+  descricao.textContent=item.description || "";
+  box.appendChild(descricao);
+
+  if(item.is_featured===true){
+   const destaque=document.createElement("p");
+   destaque.textContent="★ Publicação em destaque";
+   destaque.style.color="#f5b83d";
+   box.appendChild(destaque);
+  }
+
+  grid.appendChild(box);
+ }
+
+ if(grid.children.length>0){
+  aviso.innerText="Publicações encontradas: "+grid.children.length;
+ }else if(!aviso.innerText.startsWith("Alguns")){
+  aviso.innerText="Nenhum arquivo de mídia disponível para exibição.";
+ }
+}
+
+function voltarLista(){
+ document.getElementById("artistDetails").classList.add("hidden");
+ document.getElementById("artistsSection").classList.remove("hidden");
+}
+
 function voltarPainel(){
  document.getElementById("artistsSection").classList.add("hidden");
+ document.getElementById("artistDetails").classList.add("hidden");
  document.getElementById("artistSearch").value="";
 }
 
