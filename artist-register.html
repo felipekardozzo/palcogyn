@@ -605,7 +605,10 @@ mensagemVideo.textContent=
    mensagemVideo.textContent="Confira os tempos de início e fim.";
    return;
   }
-
+  if(segundoFinal-segundoInicial>45){
+   mensagemVideo.textContent="O trecho do vídeo não pode ultrapassar 45 segundos.";
+   return;
+  }
   const duracao=segundoFinal-segundoInicial;
 
   botao.disabled=true;
