@@ -242,7 +242,7 @@ async function abrirArtistas(){
 
  const {data,error}=await db
   .from("artist_profiles")
-  .select("user_id,artist_name,artist_type,performance_type,music_styles,city,state,performance_fee,sound_setup,equipment_needed,equipment_owned,created_at,updated_at,storage_quota_mb")
+  .select("user_id,id_palcogyn,artist_name,artist_type,performance_type,music_styles,city,state,performance_fee,sound_setup,equipment_needed,equipment_owned,created_at,updated_at,storage_quota_mb")
   .order("artist_name",{ascending:true});
 
  if(error){
