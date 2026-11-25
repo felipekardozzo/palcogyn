@@ -1,0 +1,120 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Espaço do Artista | PalcoGyn</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#0f172a;color:#fff}
+header{background:#102c50;padding:22px;text-align:center}
+header h1{margin:0;color:#38bdf8}
+header p{margin:7px 0 0;color:#bae6fd;font-size:13px}
+.container{max-width:750px;margin:25px auto;padding:20px}
+.card{background:#1e293b;padding:22px;border-radius:14px;margin-bottom:18px}
+h2{color:#38bdf8;margin-top:0}
+.info{color:#cbd5e1;line-height:1.8}
+button,.link{display:block;width:100%;padding:14px;margin-top:12px;border:0;border-radius:8px;background:#0284c7;color:white;font-weight:bold;text-align:center;text-decoration:none;cursor:pointer}
+.secondary{background:#334155}
+#mensagem{color:#fbbf24;white-space:pre-wrap}
+footer{text-align:center;color:#94a3b8;padding:20px;font-size:12px}
+</style>
+</head>
+
+<body>
+<header>
+<h1>PALCOGYN</h1>
+<p>TALENTOS • EVENTOS • CONEXÕES</p>
+</header>
+
+<div class="container">
+<div class="card">
+<h2>Meu espaço artístico</h2>
+<p id="mensagem">Verificando sua conta...</p>
+<div id="conteudo"></div>
+</div>
+</div>
+
+<footer>PalcoGyn — Descubra novos talentos.</footer>
+
+<script>
+const SUPABASE_URL = "https://nocwkiobwjpuygsbnyhn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_L0JjrfD0Zia0zjQ8opWnXA_Qzxwgp-p";
+const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+async function iniciar(){
+  const mensagem=document.getElementById("mensagem");
+  const conteudo=document.getElementById("conteudo");
+
+  try{
+    const {data:{user},error:authError}=await db.auth.getUser();
+
+    if(authError) throw authError;
+
+    if(!user){
+      mensagem.textContent="Você precisa entrar na sua conta.";
+      conteudo.innerHTML='<a class="link" href="index.html">Ir para o login</a>';
+      return;
+    }
+
+    const {data:perfil,error:perfilError}=await db
+      .from("profiles")
+      .select("nome,tipo,cidade,whatsapp")
+      .eq("id",user.id)
+      .maybeSingle();
+
+    if(perfilError) throw perfilError;
+
+    const {data:artista,error:artistaError}=await db
+      .from("artist_profiles")
+      .select("artist_name,artist_type,performance_type,music_styles,city,state,performance_fee")
+      .eq("user_id",user.id)
+      .maybeSingle();
+
+    if(artistaError) throw artistaError;
+
+    mensagem.textContent="Você está conectado!";
+
+    let html="";
+
+    html+='<p class="info"><strong>Responsável:</strong> '+escapar(perfil?.nome||"Não informado")+'</p>';
+
+    if(artista){
+      html+='<p class="info"><strong>Nome artístico:</strong> '+escapar(artista.artist_name||"Não informado")+'</p>';
+      html+='<p class="info"><strong>Categoria:</strong> '+escapar(artista.artist_type||"Não informado")+'</p>';
+      html+='<p class="info"><strong>Apresentação:</strong> '+escapar(artista.performance_type||"Não informado")+'</p>';
+      html+='<p class="info"><strong>Estilos:</strong> '+escapar((artista.music_styles||[]).join(", ")||"Não informado")+'</p>';
+      html+='<p class="info"><strong>Local:</strong> '+escapar(artista.city||"")+' - '+escapar(artista.state||"")+'</p>';
+      html+='<p class="info"><strong>Cachê informado:</strong> R$ '+Number(artista.performance_fee||0).toLocaleString("pt-BR",{minimumFractionDigits:2})+'</p>';
+      html+='<a class="link" href="artist-register.html">Atualizar meu cadastro artístico</a>';
+    }else{
+      html+='<p class="info">Seu perfil artístico ainda não foi preenchido. Complete seu cadastro para começar a apresentar seus talentos no PalcoGyn.</p>';
+      html+='<a class="link" href="artist-register.html">Completar meu cadastro artístico</a>';
+    }
+
+    html+='<button class="secondary" id="sair">Sair da conta</button>';
+    conteudo.innerHTML=html;
+
+    document.getElementById("sair").addEventListener("click",async()=>{
+      await db.auth.signOut();
+      window.location.href="index.html";
+    });
+
+  }catch(error){
+    mensagem.textContent="Erro ao carregar seu espaço: "+error.message;
+  }
+}
+
+function escapar(valor){
+  return String(valor).replace(/[&<>"']/g,function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+
+iniciar();
+</script>
+</body>
+</html>
