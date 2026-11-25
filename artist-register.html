@@ -59,9 +59,6 @@ button{width:100%;padding:14px;margin-top:22px;background:#0284c7;color:white;bo
 <label>Equipamentos próprios</label>
 <textarea id="equipment_owned" rows="3"></textarea>
 
-<label>Equipamentos necessários</label>
-<textarea id="equipment_needed" rows="3"></textarea>
-
 <button type="submit">Salvar cadastro</button>
 </form>
 <div id="mensagem"></div>
@@ -97,7 +94,6 @@ state:document.getElementById("state").value.trim().toUpperCase(),
 performance_fee:Number(document.getElementById("performance_fee").value),
 sound_setup:document.getElementById("sound_setup").value.trim(),
 equipment_owned:document.getElementById("equipment_owned").value.trim(),
-equipment_needed:document.getElementById("equipment_needed").value.trim()
 };
 
 const {error}=await db.from("artist_profiles").upsert(perfil,{onConflict:"user_id"});
