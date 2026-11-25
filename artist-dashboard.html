@@ -114,6 +114,60 @@ async function iniciar(){
     html+='<button class="secondary" id="sair">Sair da conta</button>';
     conteudo.innerHTML=html;
 
+    document.getElementById("enviarFoto").addEventListener("click",async()=>{
+  const arquivo=document.getElementById("arquivoFoto").files[0];
+  const aviso=document.getElementById("mensagemFoto");
+
+  if(!arquivo){
+    aviso.textContent="Selecione uma foto primeiro.";
+    return;
+  }
+
+  if(!arquivo.type.startsWith("image/")){
+    aviso.textContent="Selecione um arquivo de imagem.";
+    return;
+  }
+
+  if(arquivo.size>5*1024*1024){
+    aviso.textContent="A foto deve ter no máximo 5 MB.";
+    return;
+  }
+
+  aviso.textContent="Enviando foto...";
+
+  const nomeArquivo=Date.now()+"_"+arquivo.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+  const caminho=user.id+"/profile/"+nomeArquivo;
+
+  const {error:erroEnvio}=await db.storage
+    .from("artist-media")
+    .upload(caminho,arquivo);
+
+  if(erroEnvio){
+    aviso.textContent="Erro ao enviar: "+erroEnvio.message;
+    return;
+  }
+
+  const {error:erroAtualizacao}=await db
+    .from("profiles")
+    .update({foto_url:caminho})
+    .eq("id",user.id);
+
+  if(erroAtualizacao){
+    aviso.textContent="Erro ao salvar a foto: "+erroAtualizacao.message;
+    return;
+  }
+
+  const {data:foto}=await db.storage
+    .from("artist-media")
+    .createSignedUrl(caminho,3600);
+
+  if(foto){
+    document.getElementById("fotoPerfil").innerHTML=
+      '<img src="'+foto.signedUrl+'" style="width:150px;height:150px;object-fit:cover;border-radius:50%;">';
+  }
+
+  aviso.textContent="Foto de perfil atualizada com sucesso!";
+});
     document.getElementById("sair").addEventListener("click",async()=>{
       await db.auth.signOut();
       window.location.href="index.html";
