@@ -90,7 +90,6 @@ city:document.getElementById("city").value.trim(),
 state:document.getElementById("state").value.trim().toUpperCase(),
 performance_fee:Number(document.getElementById("performance_fee").value),
 sound_setup:document.getElementById("sound_setup").value.trim(),
-equipment_owned:document.getElementById("equipment_owned").value.trim(),
 };
 
 const {error}=await db.from("artist_profiles").upsert(perfil,{onConflict:"user_id"});
