@@ -314,13 +314,16 @@ function mostrarArtistas(lista){
 }
 
 function filtrarArtistas(){
- const termo=document.getElementById("artistSearch").value.toLowerCase();
- const filtrados=artistas.filter(a=>
-  (a.artist_name || "").toLowerCase().includes(termo) ||
-  (a.city || "").toLowerCase().includes(termo) ||
-  (a.profiles?.nome || "").toLowerCase().includes(termo)
- );
- mostrarArtistas(filtrados);
+  const termo=document.getElementById("artistSearch").value.trim().toLowerCase();
+
+  const filtrados=artistas.filter(a=>
+    (a.id_palcogyn || "").toString().includes(termo) ||
+    (a.artist_name || "").toLowerCase().includes(termo) ||
+    (a.city || "").toLowerCase().includes(termo) ||
+    (a.profiles?.nome || "").toLowerCase().includes(termo)
+  );
+
+  mostrarArtistas(filtrados);
 }
 
 async function abrirFicha(userId){
