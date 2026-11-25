@@ -44,7 +44,7 @@ header p{
 
 .card{
  background:#172438;
- border:1px solid #293c55;
+ :1px solid #293c55;
  padding:25px;
  border-radius:16px;
  margin-bottom:20px;
@@ -345,8 +345,7 @@ async function iniciar(){
 
   const {data:artista,error:artistaError}=await db
    .from("artist_profiles")
-   .select("id_palcogyn,artist_name,artist_type,performance_type,music_styles,city,state,performance_fee,bio")
-   .eq("user_id",user.id)
+   .select("id_palcogyn,artist_name,artist_type,performance_type,music_styles,city,state,performance_fee,bio,presentation_video_url")   .eq("user_id",user.id)
    .maybeSingle();
 
   if(artistaError) throw artistaError;
@@ -385,6 +384,23 @@ async function iniciar(){
        ${artista.performance_type?" • "+escapar(artista.performance_type):""}
       </p>
      </div>
+
+        </div>
+
+    <div id="videoApresentacaoArea" style="display:none;margin-top:25px;">
+
+     <hr style="border-color:#30445e;margin:25px 0">
+
+     <h2>Vídeo de apresentação</h2>
+
+     <p class="info">Conheça um pouco mais do trabalho deste artista.</p>
+
+     <video id="videoApresentacao"
+      controls
+      playsinline
+      preload="metadata"
+      style="width:100%;max-height:450px;background:#000;border-radius:12px;">
+     </video>
 
     </div>
 
@@ -452,7 +468,26 @@ async function iniciar(){
     }
 
    }
+    // VÍDEO DE APRESENTAÇÃO
 
+   if(artista.presentation_video_url){
+
+    const {data:videoArquivo,error:erroVideo}=await db.storage
+     .from("artist-media")
+     .createSignedUrl(artista.presentation_video_url,3600);
+
+    if(!erroVideo && videoArquivo?.signedUrl){
+
+     const areaVideo=document.getElementById("videoApresentacaoArea");
+     const playerVideo=document.getElementById("videoApresentacao");
+
+     playerVideo.src=videoArquivo.signedUrl;
+     areaVideo.style.display="block";
+
+    }
+
+   }
+   
    // BIOGRAFIA
 
    const biografiaArea=document.getElementById("biografiaArea");
