@@ -56,7 +56,7 @@ async function iniciar(){
 
     if(!user){
   m.textContent="Você precisa entrar na sua conta.";
-  conteudo.innerHTML='<a class="link" href="index.html">Ir para o login</a>';
+  conteudo.HTML='<a class="link" href="index.html">Ir para o login</a>';
   return;
 }
 
@@ -110,6 +110,60 @@ async function iniciar(){
 
     html+='<button class="secondary" id="sair">Sair da conta</button>';
     conteudo.innerHTML=html;
+    async function carregarPortfolio(){
+  const lista=document.getElementById("listaPortfolio");
+  lista.innerHTML="Carregando publicações...";
+
+  const {data:midias,error}=await db
+    .from("artist_portfolio")
+    .select("id,artist_id,media_type,media_url,is_featured,created_at")
+    .eq("artist_id",user.id)
+    .order("created_at",{ascending:false});
+
+  if(error){
+    lista.textContent="Erro ao carregar portfólio: "+error.message;
+    return;
+  }
+
+  lista.innerHTML="";
+
+  if(!midias || midias.length===0){
+    lista.textContent="Você ainda não publicou fotos ou vídeos.";
+    return;
+  }
+
+  for(const item of midias){
+    const {data:arquivo,error:erroArquivo}=await db.storage
+      .from("artist-media")
+      .createSignedUrl(item.media_url,3600);
+
+    if(erroArquivo || !arquivo?.signedUrl) continue;
+
+    const bloco=document.createElement("div");
+    bloco.style.margin="15px 0";
+    bloco.style.padding="12px";
+    bloco.style.background="#334155";
+    bloco.style.borderRadius="10px";
+
+    if(item.media_type==="video"){
+      bloco.innerHTML='<video controls style="width:100%;max-height:300px;border-radius:8px;"></video>';
+      bloco.querySelector("video").src=arquivo.signedUrl;
+    }else{
+      bloco.innerHTML='<img style="width:100%;max-height:300px;object-fit:contain;border-radius:8px;">';
+      bloco.querySelector("img").src=arquivo.signedUrl;
+    }
+
+    if(item.is_featured){
+      const destaque=document.createElement("p");
+      destaque.textContent="Publicação em destaque";
+      bloco.appendChild(destaque);
+    }
+
+    lista.appendChild(bloco);
+  }
+}
+
+carregarPortfolio();
     if(perfil?.foto_url){
   const {data:foto,error:erroFoto}=await db.storage
     .from("artist-media")
