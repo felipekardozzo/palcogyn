@@ -174,6 +174,211 @@ setTimeout(()=>{
   }
 });
 
+async function iniciarMidias(){
+  const {data:{user},error}=await db.auth.getUser();
+
+  if(error || !user) return;
+
+  const fotoPerfil=document.getElementById("fotoPerfil");
+  const avisoFoto=document.getElementById("mensagemFoto");
+  const avisoPortfolio=document.getElementById("mensagemPortfolio");
+  const lista=document.getElementById("listaPortfolio");
+
+  // CARREGAR FOTO DE PERFIL
+  const {data:perfil}=await db
+    .from("profiles")
+    .select("foto_url")
+    .eq("id",user.id)
+    .maybeSingle();
+
+  if(perfil?.foto_url){
+    const {data:foto}=await db.storage
+      .from("artist-media")
+      .createSignedUrl(perfil.foto_url,3600);
+
+    if(foto?.signedUrl){
+      fotoPerfil.innerHTML=
+        '<img src="'+foto.signedUrl+'" style="width:150px;height:150px;object-fit:cover;border-radius:50%;">';
+    }
+  }
+
+  // ATUALIZAR FOTO DE PERFIL
+  document.getElementById("enviarFoto").addEventListener("click",async()=>{
+    const arquivo=document.getElementById("arquivoFoto").files[0];
+
+    if(!arquivo){
+      avisoFoto.textContent="Selecione uma foto.";
+      return;
+    }
+
+    if(!arquivo.type.startsWith("image/") || arquivo.size>5*1024*1024){
+      avisoFoto.textContent="Envie uma imagem de até 5 MB.";
+      return;
+    }
+
+    avisoFoto.textContent="Enviando foto...";
+
+    const fotoAntiga=perfil?.foto_url;
+    const nome=Date.now()+"_"+arquivo.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+    const caminho=user.id+"/profile/"+nome;
+
+    const {error:envio}=await db.storage
+      .from("artist-media")
+      .upload(caminho,arquivo);
+
+    if(envio){
+      avisoFoto.textContent="Erro ao enviar: "+envio.message;
+      return;
+    }
+
+    const {error:atualizacao}=await db
+      .from("profiles")
+      .update({foto_url:caminho})
+      .eq("id",user.id);
+
+    if(atualizacao){
+      await db.storage.from("artist-media").remove([caminho]);
+      avisoFoto.textContent="Erro ao salvar: "+atualizacao.message;
+      return;
+    }
+
+    if(fotoAntiga && fotoAntiga!==caminho){
+      await db.storage.from("artist-media").remove([fotoAntiga]);
+    }
+
+    perfil.foto_url=caminho;
+
+    const {data:foto}=await db.storage
+      .from("artist-media")
+      .createSignedUrl(caminho,3600);
+
+    if(foto?.signedUrl){
+      fotoPerfil.innerHTML=
+        '<img src="'+foto.signedUrl+'" style="width:150px;height:150px;object-fit:cover;border-radius:50%;">';
+    }
+
+    document.getElementById("arquivoFoto").value="";
+    avisoFoto.textContent="Foto de perfil atualizada com sucesso!";
+  });
+
+  // CARREGAR PORTFÓLIO
+  async function carregarPortfolio(){
+    lista.textContent="Carregando publicações...";
+
+    const {data:midias,error}=await db
+      .from("artist_portfolio")
+      .select("id,media_type,media_url,is_featured,created_at")
+      .eq("artist_id",user.id)
+      .order("created_at",{ascending:false});
+
+    if(error){
+      lista.textContent="Erro ao carregar: "+error.message;
+      return;
+    }
+
+    lista.innerHTML="";
+
+    if(!midias || midias.length===0){
+      lista.textContent="Você ainda não publicou fotos ou vídeos.";
+      return;
+    }
+
+    for(const item of midias){
+      const {data:arquivo}=await db.storage
+        .from("artist-media")
+        .createSignedUrl(item.media_url,3600);
+
+      if(!arquivo?.signedUrl) continue;
+
+      const bloco=document.createElement("div");
+      bloco.style.margin="15px 0";
+      bloco.style.padding="12px";
+      bloco.style.background="#334155";
+      bloco.style.borderRadius="10px";
+
+      if(item.media_type==="video"){
+        bloco.innerHTML='<video controls style="width:100%;max-height:300px;border-radius:8px;"></video>';
+        bloco.querySelector("video").src=arquivo.signedUrl;
+      }else{
+        bloco.innerHTML='<img style="width:100%;max-height:300px;object-fit:contain;border-radius:8px;">';
+        bloco.querySelector("img").src=arquivo.signedUrl;
+      }
+
+      if(item.is_featured){
+        const destaque=document.createElement("p");
+        destaque.textContent="Publicação em destaque";
+        bloco.appendChild(destaque);
+      }
+
+      lista.appendChild(bloco);
+    }
+  }
+
+  await carregarPortfolio();
+
+  // PUBLICAR FOTO OU VÍDEO
+  document.getElementById("enviarPortfolio").addEventListener("click",async()=>{
+    const arquivo=document.getElementById("arquivoPortfolio").files[0];
+
+    if(!arquivo){
+      avisoPortfolio.textContent="Selecione uma foto ou vídeo.";
+      return;
+    }
+
+    const ehFoto=arquivo.type.startsWith("image/");
+    const ehVideo=arquivo.type==="video/mp4";
+
+    if(!ehFoto && !ehVideo){
+      avisoPortfolio.textContent="Envie uma imagem ou vídeo MP4.";
+      return;
+    }
+
+    if(ehFoto && arquivo.size>5*1024*1024){
+      avisoPortfolio.textContent="A foto deve ter no máximo 5 MB.";
+      return;
+    }
+
+    if(ehVideo && arquivo.size>25*1024*1024){
+      avisoPortfolio.textContent="O vídeo deve ter no máximo 25 MB.";
+      return;
+    }
+
+    avisoPortfolio.textContent="Enviando publicação...";
+
+    const nome=Date.now()+"_"+arquivo.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+    const caminho=user.id+"/portfolio/"+nome;
+
+    const {error:envio}=await db.storage
+      .from("artist-media")
+      .upload(caminho,arquivo);
+
+    if(envio){
+      avisoPortfolio.textContent="Erro no envio: "+envio.message;
+      return;
+    }
+
+    const {error:cadastro}=await db
+      .from("artist_portfolio")
+      .insert({
+        artist_id:user.id,
+        media_type:ehVideo?"video":"performance_photo",
+        media_url:caminho,
+        is_featured:false
+      });
+
+    if(cadastro){
+      await db.storage.from("artist-media").remove([caminho]);
+      avisoPortfolio.textContent="Erro ao cadastrar: "+cadastro.message;
+      return;
+    }
+
+    document.getElementById("arquivoPortfolio").value="";
+    avisoPortfolio.textContent="Publicação enviada com sucesso!";
+    await carregarPortfolio();
+  });
+}
+
+iniciarMidias();
 carregarCadastro();
 </script>
 </body>
