@@ -340,8 +340,6 @@ async function abrirFicha(userId){
 
  const dados=document.getElementById("detailFields");
  const contato=document.getElementById("contactFields");
- const equipamentos=document.getElementById("equipmentFields");
- dados.innerHTML="";
  contato.innerHTML="";
  equipamentos.innerHTML="";
 
@@ -361,10 +359,7 @@ async function abrirFicha(userId){
  campo(contato,"WhatsApp",a.profiles?.whatsapp);
  campo(contato,"Cidade do perfil",a.profiles?.cidade);
 
- campo(equipamentos,"Equipamentos próprios",a.equipment_owned);
- campo(equipamentos,"Equipamentos necessários",a.equipment_needed);
-
- document.getElementById("detailMessage").innerText="";
+  document.getElementById("detailMessage").innerText="";
  document.getElementById("detailContent").classList.remove("hidden");
 
  await carregarPortfolio(userId);
