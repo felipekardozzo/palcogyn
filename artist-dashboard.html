@@ -110,7 +110,9 @@ async function iniciar(){
 
     html+='<button class="secondary" id="sair">Sair da conta</button>';
     conteudo.innerHTML=html;
-    async function carregarPortfolio(){
+    
+   
+async function carregarPortfolio(){
   const lista=document.getElementById("listaPortfolio");
   lista.innerHTML="Carregando publicações...";
 
@@ -164,6 +166,67 @@ async function iniciar(){
 }
 
 carregarPortfolio();
+
+document.getElementById("enviarPortfolio").addEventListener("click",async()=>{
+  const arquivo=document.getElementById("arquivoPortfolio").files[0];
+  const aviso=document.getElementById("mensagemPortfolio");
+
+  if(!arquivo){
+    aviso.textContent="Selecione uma foto ou vídeo.";
+    return;
+  }
+
+  const ehFoto=arquivo.type.startsWith("image/");
+  const ehVideo=arquivo.type==="video/mp4";
+
+  if(!ehFoto && !ehVideo){
+    aviso.textContent="Envie uma imagem ou vídeo MP4.";
+    return;
+  }
+
+  if(ehFoto && arquivo.size>5*1024*1024){
+    aviso.textContent="A foto deve ter no máximo 5 MB.";
+    return;
+  }
+
+  if(ehVideo && arquivo.size>25*1024*1024){
+    aviso.textContent="O vídeo deve ter no máximo 25 MB.";
+    return;
+  }
+
+  aviso.textContent="Enviando publicação...";
+
+  const nomeArquivo=Date.now()+"_"+arquivo.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+  const caminho=user.id+"/portfolio/"+nomeArquivo;
+
+  const {error:erroEnvio}=await db.storage
+    .from("artist-media")
+    .upload(caminho,arquivo);
+
+  if(erroEnvio){
+    aviso.textContent="Erro no envio: "+erroEnvio.message;
+    return;
+  }
+
+  const {error:erroCadastro}=await db
+    .from("artist_portfolio")
+    .insert({
+      artist_id:user.id,
+      media_type:ehVideo?"video":"image",
+      media_url:caminho,
+      is_featured:false
+    });
+
+  if(erroCadastro){
+    await db.storage.from("artist-media").remove([caminho]);
+    aviso.textContent="Erro ao cadastrar publicação: "+erroCadastro.message;
+    return;
+  }
+
+  aviso.textContent="Publicação enviada com sucesso!";
+  document.getElementById("arquivoPortfolio").value="";
+  await carregarPortfolio();
+});
     if(perfil?.foto_url){
   const {data:foto,error:erroFoto}=await db.storage
     .from("artist-media")
