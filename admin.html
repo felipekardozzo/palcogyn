@@ -113,6 +113,14 @@ footer{text-align:center;color:#8998ad;padding:25px;font-size:12px}
 <h2>Gerenciamento de artistas</h2>
 <p class="muted">Cadastros encontrados na plataforma</p>
 <input id="artistSearch" placeholder="Pesquisar nome artístico ou cidade..." oninput="filtrarArtistas()">
+<input
+  type="text"
+  id="artistSearch"
+  placeholder="Pesquisar por ID PALCOGYN ou nome artístico..."
+  oninput="renderArtists()"
+  style="width:100%;padding:12px;margin-bottom:15px;border-radius:8px;border:1px solid #ccc;"
+>
+
 <div id="artistMessage" class="muted">Carregando artistas...</div>
 <div class="tablewrap">
 <table id="artistTable" class="hidden">
