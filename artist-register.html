@@ -414,8 +414,1026 @@ async function iniciarMidias(){
   });
 }
 
+
+async function iniciarVideoApresentacao(){
+
+ const arquivoInput=document.getElementById("arquivoApresentacao");
+ const video=document.getElementById("previewApresentacao");
+ const area=document.getElementById("areaVideo");
+ const inicio=document.getElementById("inicioVideo");
+ const fim=document.getElementById("fimVideo");
+ const mensagemVideo=document.getElementById("mensagemVideo");
+ const videoSalvo=document.getElementById("videoSalvo");
+ const botao=document.getElementById("prepararVideo");
+
+ const LIMITE=5*1024*1024;
+ let arquivoSelecionado=null;
+ let urlTemporaria=null;
+
+ const {data:{user},error}=await db.auth.getUser();
+
+ if(error || !user){
+  mensagemVideo.textContent="Faça login para gerenciar seu vídeo.";
+  return;
+ }
+
+ // CARREGAR VÍDEO JÁ PUBLICADO
+
+ async function carregarVideoSalvo(){
+
+  const {data:perfil,error}=await db
+   .from("artist_profiles")
+   .select("presentation_video_url")
+   .eq("user_id",user.id)
+   .maybeSingle();
+
+  if(error){
+   mensagemVideo.textContent="Erro ao consultar vídeo: "+error.message;
+   return;
+  }
+
+  if(!perfil?.presentation_video_url) return;
+
+  const {data:arquivo}=await db.storage
+   .from("artist-media")
+   .createSignedUrl(perfil.presentation_video_url,3600);
+
+  if(arquivo?.signedUrl){
+
+   videoSalvo.innerHTML="";
+
+   const titulo=document.createElement("h3");
+   titulo.textContent="Meu vídeo publicado";
+
+   const player=document.createElement("video");
+   player.src=arquivo.signedUrl;
+   player.controls=true;
+   player.playsInline=true;
+   player.style.width="100%";
+   player.style.maxHeight="300px";
+   player.style.borderRadius="10px";
+
+   videoSalvo.append(titulo,player);
+  }
+
+ }
+
+ await carregarVideoSalvo();
+
+ // SELECIONAR E VISUALIZAR VÍDEO
+
+ arquivoInput.addEventListener("change",function(){
+
+  const arquivo=this.files[0];
+
+  if(!arquivo) return;
+
+  if(!arquivo.type.startsWith("video/")){
+   mensagemVideo.textContent="Selecione um arquivo de vídeo.";
+   this.value="";
+   return;
+  }
+
+  arquivoSelecionado=arquivo;
+
+  if(urlTemporaria){
+   URL.revokeObjectURL(urlTemporaria);
+  }
+
+  urlTemporaria=URL.createObjectURL(arquivo);
+  video.src=urlTemporaria;
+  area.style.display="block";
+  mensagemVideo.textContent="Carregando vídeo...";
+
+  video.onloadedmetadata=function(){
+
+   inicio.value="0";
+   fim.value=video.duration.toFixed(1);
+
+   mensagemVideo.textContent=
+    "Duração original: "+video.duration.toFixed(1)+" segundos. Escolha o trecho desejado.";
+
+  };
+
+ });
+
+ // PREPARAR, CORTAR E COMPRIMIR
+
+ botao.addEventListener("click",async function(){
+
+  if(!arquivoSelecionado || !video.duration){
+   mensagemVideo.textContent="Selecione um vídeo primeiro.";
+   return;
+  }
+
+  if(!window.MediaRecorder || !video.captureStream){
+   mensagemVideo.textContent=
+    "Seu navegador não oferece suporte ao corte automático. Utilize uma versão atualizada do Chrome ou Edge.";
+   return;
+  }
+
+  const segundoInicial=Number(inicio.value);
+  const segundoFinal=Number(fim.value);
+
+  if(
+   !Number.isFinite(segundoInicial) ||
+   !Number.isFinite(segundoFinal) ||
+   segundoInicial<0 ||
+   segundoFinal>video.duration ||
+   segundoFinal<=segundoInicial
+  ){
+   mensagemVideo.textContent="Confira os tempos de início e fim.";
+   return;
+  }
+
+  const duracao=segundoFinal-segundoInicial;
+
+  botao.disabled=true;
+  mensagemVideo.textContent="Preparando vídeo. Aguarde...";
+
+  let gravador=null;
+  let streamFinal=null;
+  let streamOriginal=null;
+  let animacao=null;
+
+  try{
+
+   const canvas=document.createElement("canvas");
+
+   const escala=Math.min(1,720/video.videoWidth,720/video.videoHeight);
+
+   canvas.width=Math.round(video.videoWidth*escala);
+   canvas.height=Math.round(video.videoHeight*escala);
+
+   const contexto=canvas.getContext("2d");
+
+   // Posicionar no início do corte
+
+   if(Math.abs(video.currentTime-segundoInicial)>0.05){
+
+    await new Promise(resolve=>{
+     video.addEventListener("seeked",resolve,{once:true});
+     video.currentTime=segundoInicial;
+    });
+
+   }
+
+   streamFinal=canvas.captureStream(24);
+   streamOriginal=video.captureStream();
+
+   // Preservar o áudio original
+
+   streamOriginal.getAudioTracks().forEach(track=>{
+    streamFinal.addTrack(track);
+   });
+
+   const mimeType=MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus")
+    ?"video/webm;codecs=vp8,opus"
+    :"video/webm";
+
+   const taxaTotal=Math.floor(
+    (LIMITE*8*0.82)/duracao
+   );
+
+   const taxaVideo=Math.max(
+    180000,
+    Math.min(2500000,taxaTotal-96000)
+   );
+
+   gravador=new MediaRecorder(streamFinal,{
+    mimeType:mimeType,
+    videoBitsPerSecond:taxaVideo,
+    audioBitsPerSecond:64000
+   });
+
+   const partes=[];
+
+   gravador.ondataavailable=function(event){
+    if(event.data.size>0) partes.push(event.data);
+   };
+
+   const resultado=new Promise((resolve,reject)=>{
+
+    gravador.onstop=function(){
+     resolve(new Blob(partes,{type:"video/webm"}));
+    };
+
+    gravador.onerror=function(){
+     reject(new Error("Falha durante a compressão do vídeo."));
+    };
+
+   });
+
+   gravador.start(1000);
+
+   await video.play();
+
+   function desenhar(){
+
+    if(video.paused || video.ended) return;
+
+    contexto.drawImage(video,0,0,canvas.width,canvas.height);
+    animacao=requestAnimationFrame(desenhar);
+
+   }
+
+   desenhar();
+
+   await new Promise(resolve=>{
+    setTimeout(resolve,duracao*1000);
+   });
+
+   video.pause();
+
+   if(gravador.state!=="inactive"){
+    gravador.stop();
+   }
+
+   const videoFinal=await resultado;
+
+   if(animacao) cancelAnimationFrame(animacao);
+
+   if(videoFinal.size>LIMITE){
+
+    throw new Error(
+     "O vídeo ainda ultrapassou 5 MB. Reduza a duração do trecho e tente novamente."
+    );
+
+   }
+
+   mensagemVideo.textContent="Enviando vídeo preparado...";
+
+   const nome=Date.now()+"_apresentacao.webm";
+   const caminho=user.id+"/presentation/"+nome;
+
+   const {data:antigo}=await db
+    .from("artist_profiles")
+    .select("presentation_video_url")
+    .eq("user_id",user.id)
+    .maybeSingle();
+
+   const caminhoAntigo=antigo?.presentation_video_url;
+
+   const {error:envio}=await db.storage
+    .from("artist-media")
+    .upload(caminho,videoFinal,{
+     contentType:"video/webm"
+    });
+
+   if(envio) throw envio;
+
+   const {error:atualizacao}=await db
+    .from("artist_profiles")
+    .update({presentation_video_url:caminho})
+    .eq("user_id",user.id);
+
+   if(atualizacao){
+
+    await db.storage.from("artist-media").remove([caminho]);
+    throw atualizacao;
+
+   }
+
+   if(caminhoAntigo && caminhoAntigo!==caminho){
+    await db.storage.from("artist-media").remove([caminhoAntigo]);
+   }
+
+   const {data:link}=await db.storage
+    .from("artist-media")
+    .createSignedUrl(caminho,3600);
+
+   videoSalvo.innerHTML="";
+
+   const titulo=document.createElement("h3");
+   titulo.textContent="Meu vídeo publicado";
+
+   const player=document.createElement("video");
+   player.src=link.signedUrl;
+   player.controls=true;
+   player.playsInline=true;
+   player.style.width="100%";
+   player.style.maxHeight="300px";
+   player.style.borderRadius="10px";
+
+   videoSalvo.append(titulo,player);
+
+   mensagemVideo.textContent=
+    "Vídeo publicado com sucesso! Tamanho final: "+
+    (videoFinal.size/1024/1024).toFixed(2)+" MB.";
+
+   arquivoInput.value="";
+   arquivoSelecionado=null;
+   area.style.display="none";
+
+  }catch(erro){
+
+   mensagemVideo.textContent="Não foi possível preparar o vídeo: "+erro.message;
+
+  }finally{
+
+   if(animacao) cancelAnimationFrame(animacao);
+
+   if(gravador && gravador.state!=="inactive"){
+    gravador.stop();
+   }
+
+   if(streamFinal){
+    streamFinal.getTracks().forEach(track=>track.stop());
+   }
+
+   if(streamOriginal){
+    streamOriginal.getTracks().forEach(track=>track.stop());
+   }
+
+   botao.disabled=false;
+
+  }
+
+ });
+
+}
+
+
+async function iniciarVideoApresentacao(){
+
+ const arquivoInput=document.getElementById("arquivoApresentacao");
+ const video=document.getElementById("previewApresentacao");
+ const area=document.getElementById("areaVideo");
+ const inicio=document.getElementById("inicioVideo");
+ const fim=document.getElementById("fimVideo");
+ const mensagemVideo=document.getElementById("mensagemVideo");
+ const videoSalvo=document.getElementById("videoSalvo");
+ const botao=document.getElementById("prepararVideo");
+
+ const LIMITE=5*1024*1024;
+ let arquivoSelecionado=null;
+ let urlTemporaria=null;
+
+ const {data:{user},error}=await db.auth.getUser();
+
+ if(error || !user){
+  mensagemVideo.textContent="Faça login para gerenciar seu vídeo.";
+  return;
+ }
+
+ // CARREGAR VÍDEO JÁ PUBLICADO
+
+ async function carregarVideoSalvo(){
+
+  const {data:perfil,error}=await db
+   .from("artist_profiles")
+   .select("presentation_video_url")
+   .eq("user_id",user.id)
+   .maybeSingle();
+
+  if(error){
+   mensagemVideo.textContent="Erro ao consultar vídeo: "+error.message;
+   return;
+  }
+
+  if(!perfil?.presentation_video_url) return;
+
+  const {data:arquivo}=await db.storage
+   .from("artist-media")
+   .createSignedUrl(perfil.presentation_video_url,3600);
+
+  if(arquivo?.signedUrl){
+
+   videoSalvo.innerHTML="";
+
+   const titulo=document.createElement("h3");
+   titulo.textContent="Meu vídeo publicado";
+
+   const player=document.createElement("video");
+   player.src=arquivo.signedUrl;
+   player.controls=true;
+   player.playsInline=true;
+   player.style.width="100%";
+   player.style.maxHeight="300px";
+   player.style.borderRadius="10px";
+
+   videoSalvo.append(titulo,player);
+  }
+
+ }
+
+ await carregarVideoSalvo();
+
+ // SELECIONAR E VISUALIZAR VÍDEO
+
+ arquivoInput.addEventListener("change",function(){
+
+  const arquivo=this.files[0];
+
+  if(!arquivo) return;
+
+  if(!arquivo.type.startsWith("video/")){
+   mensagemVideo.textContent="Selecione um arquivo de vídeo.";
+   this.value="";
+   return;
+  }
+
+  arquivoSelecionado=arquivo;
+
+  if(urlTemporaria){
+   URL.revokeObjectURL(urlTemporaria);
+  }
+
+  urlTemporaria=URL.createObjectURL(arquivo);
+  video.src=urlTemporaria;
+  area.style.display="block";
+  mensagemVideo.textContent="Carregando vídeo...";
+
+  video.onloadedmetadata=function(){
+
+   inicio.value="0";
+   fim.value=video.duration.toFixed(1);
+
+   mensagemVideo.textContent=
+    "Duração original: "+video.duration.toFixed(1)+" segundos. Escolha o trecho desejado.";
+
+  };
+
+ });
+
+ // PREPARAR, CORTAR E COMPRIMIR
+
+ botao.addEventListener("click",async function(){
+
+  if(!arquivoSelecionado || !video.duration){
+   mensagemVideo.textContent="Selecione um vídeo primeiro.";
+   return;
+  }
+
+  if(!window.MediaRecorder || !video.captureStream){
+   mensagemVideo.textContent=
+    "Seu navegador não oferece suporte ao corte automático. Utilize uma versão atualizada do Chrome ou Edge.";
+   return;
+  }
+
+  const segundoInicial=Number(inicio.value);
+  const segundoFinal=Number(fim.value);
+
+  if(
+   !Number.isFinite(segundoInicial) ||
+   !Number.isFinite(segundoFinal) ||
+   segundoInicial<0 ||
+   segundoFinal>video.duration ||
+   segundoFinal<=segundoInicial
+  ){
+   mensagemVideo.textContent="Confira os tempos de início e fim.";
+   return;
+  }
+
+  const duracao=segundoFinal-segundoInicial;
+
+  botao.disabled=true;
+  mensagemVideo.textContent="Preparando vídeo. Aguarde...";
+
+  let gravador=null;
+  let streamFinal=null;
+  let streamOriginal=null;
+  let animacao=null;
+
+  try{
+
+   const canvas=document.createElement("canvas");
+
+   const escala=Math.min(1,720/video.videoWidth,720/video.videoHeight);
+
+   canvas.width=Math.round(video.videoWidth*escala);
+   canvas.height=Math.round(video.videoHeight*escala);
+
+   const contexto=canvas.getContext("2d");
+
+   // Posicionar no início do corte
+
+   if(Math.abs(video.currentTime-segundoInicial)>0.05){
+
+    await new Promise(resolve=>{
+     video.addEventListener("seeked",resolve,{once:true});
+     video.currentTime=segundoInicial;
+    });
+
+   }
+
+   streamFinal=canvas.captureStream(24);
+   streamOriginal=video.captureStream();
+
+   // Preservar o áudio original
+
+   streamOriginal.getAudioTracks().forEach(track=>{
+    streamFinal.addTrack(track);
+   });
+
+   const mimeType=MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus")
+    ?"video/webm;codecs=vp8,opus"
+    :"video/webm";
+
+   const taxaTotal=Math.floor(
+    (LIMITE*8*0.82)/duracao
+   );
+
+   const taxaVideo=Math.max(
+    180000,
+    Math.min(2500000,taxaTotal-96000)
+   );
+
+   gravador=new MediaRecorder(streamFinal,{
+    mimeType:mimeType,
+    videoBitsPerSecond:taxaVideo,
+    audioBitsPerSecond:64000
+   });
+
+   const partes=[];
+
+   gravador.ondataavailable=function(event){
+    if(event.data.size>0) partes.push(event.data);
+   };
+
+   const resultado=new Promise((resolve,reject)=>{
+
+    gravador.onstop=function(){
+     resolve(new Blob(partes,{type:"video/webm"}));
+    };
+
+    gravador.onerror=function(){
+     reject(new Error("Falha durante a compressão do vídeo."));
+    };
+
+   });
+
+   gravador.start(1000);
+
+   await video.play();
+
+   function desenhar(){
+
+    if(video.paused || video.ended) return;
+
+    contexto.drawImage(video,0,0,canvas.width,canvas.height);
+    animacao=requestAnimationFrame(desenhar);
+
+   }
+
+   desenhar();
+
+   await new Promise(resolve=>{
+    setTimeout(resolve,duracao*1000);
+   });
+
+   video.pause();
+
+   if(gravador.state!=="inactive"){
+    gravador.stop();
+   }
+
+   const videoFinal=await resultado;
+
+   if(animacao) cancelAnimationFrame(animacao);
+
+   if(videoFinal.size>LIMITE){
+
+    throw new Error(
+     "O vídeo ainda ultrapassou 5 MB. Reduza a duração do trecho e tente novamente."
+    );
+
+   }
+
+   mensagemVideo.textContent="Enviando vídeo preparado...";
+
+   const nome=Date.now()+"_apresentacao.webm";
+   const caminho=user.id+"/presentation/"+nome;
+
+   const {data:antigo}=await db
+    .from("artist_profiles")
+    .select("presentation_video_url")
+    .eq("user_id",user.id)
+    .maybeSingle();
+
+   const caminhoAntigo=antigo?.presentation_video_url;
+
+   const {error:envio}=await db.storage
+    .from("artist-media")
+    .upload(caminho,videoFinal,{
+     contentType:"video/webm"
+    });
+
+   if(envio) throw envio;
+
+   const {error:atualizacao}=await db
+    .from("artist_profiles")
+    .update({presentation_video_url:caminho})
+    .eq("user_id",user.id);
+
+   if(atualizacao){
+
+    await db.storage.from("artist-media").remove([caminho]);
+    throw atualizacao;
+
+   }
+
+   if(caminhoAntigo && caminhoAntigo!==caminho){
+    await db.storage.from("artist-media").remove([caminhoAntigo]);
+   }
+
+   const {data:link}=await db.storage
+    .from("artist-media")
+    .createSignedUrl(caminho,3600);
+
+   videoSalvo.innerHTML="";
+
+   const titulo=document.createElement("h3");
+   titulo.textContent="Meu vídeo publicado";
+
+   const player=document.createElement("video");
+   player.src=link.signedUrl;
+   player.controls=true;
+   player.playsInline=true;
+   player.style.width="100%";
+   player.style.maxHeight="300px";
+   player.style.borderRadius="10px";
+
+   videoSalvo.append(titulo,player);
+
+   mensagemVideo.textContent=
+    "Vídeo publicado com sucesso! Tamanho final: "+
+    (videoFinal.size/1024/1024).toFixed(2)+" MB.";
+
+   arquivoInput.value="";
+   arquivoSelecionado=null;
+   area.style.display="none";
+
+  }catch(erro){
+
+   mensagemVideo.textContent="Não foi possível preparar o vídeo: "+erro.message;
+
+  }finally{
+
+   if(animacao) cancelAnimationFrame(animacao);
+
+   if(gravador && gravador.state!=="inactive"){
+    gravador.stop();
+   }
+
+   if(streamFinal){
+    streamFinal.getTracks().forEach(track=>track.stop());
+   }
+
+   if(streamOriginal){
+    streamOriginal.getTracks().forEach(track=>track.stop());
+   }
+
+   botao.disabled=false;
+
+  }
+
+ });
+
+}
+
+async function iniciarVideoApresentacao(){
+
+ const arquivoInput=document.getElementById("arquivoApresentacao");
+ const video=document.getElementById("previewApresentacao");
+ const area=document.getElementById("areaVideo");
+ const inicio=document.getElementById("inicioVideo");
+ const fim=document.getElementById("fimVideo");
+ const mensagemVideo=document.getElementById("mensagemVideo");
+ const videoSalvo=document.getElementById("videoSalvo");
+ const botao=document.getElementById("prepararVideo");
+
+ const LIMITE=5*1024*1024;
+ let arquivoSelecionado=null;
+ let urlTemporaria=null;
+
+ const {data:{user},error}=await db.auth.getUser();
+
+ if(error || !user){
+  mensagemVideo.textContent="Faça login para gerenciar seu vídeo.";
+  return;
+ }
+
+ // CARREGAR VÍDEO JÁ PUBLICADO
+
+ async function carregarVideoSalvo(){
+
+  const {data:perfil,error}=await db
+   .from("artist_profiles")
+   .select("presentation_video_url")
+   .eq("user_id",user.id)
+   .maybeSingle();
+
+  if(error){
+   mensagemVideo.textContent="Erro ao consultar vídeo: "+error.message;
+   return;
+  }
+
+  if(!perfil?.presentation_video_url) return;
+
+  const {data:arquivo}=await db.storage
+   .from("artist-media")
+   .createSignedUrl(perfil.presentation_video_url,3600);
+
+  if(arquivo?.signedUrl){
+
+   videoSalvo.innerHTML="";
+
+   const titulo=document.createElement("h3");
+   titulo.textContent="Meu vídeo publicado";
+
+   const player=document.createElement("video");
+   player.src=arquivo.signedUrl;
+   player.controls=true;
+   player.playsInline=true;
+   player.style.width="100%";
+   player.style.maxHeight="300px";
+   player.style.borderRadius="10px";
+
+   videoSalvo.append(titulo,player);
+  }
+
+ }
+
+ await carregarVideoSalvo();
+
+ // SELECIONAR E VISUALIZAR VÍDEO
+
+ arquivoInput.addEventListener("change",function(){
+
+  const arquivo=this.files[0];
+
+  if(!arquivo) return;
+
+  if(!arquivo.type.startsWith("video/")){
+   mensagemVideo.textContent="Selecione um arquivo de vídeo.";
+   this.value="";
+   return;
+  }
+
+  arquivoSelecionado=arquivo;
+
+  if(urlTemporaria){
+   URL.revokeObjectURL(urlTemporaria);
+  }
+
+  urlTemporaria=URL.createObjectURL(arquivo);
+  video.src=urlTemporaria;
+  area.style.display="block";
+  mensagemVideo.textContent="Carregando vídeo...";
+
+  video.onloadedmetadata=function(){
+
+   inicio.value="0";
+   fim.value=video.duration.toFixed(1);
+
+   mensagemVideo.textContent=
+    "Duração original: "+video.duration.toFixed(1)+" segundos. Escolha o trecho desejado.";
+
+  };
+
+ });
+
+ // PREPARAR, CORTAR E COMPRIMIR
+
+ botao.addEventListener("click",async function(){
+
+  if(!arquivoSelecionado || !video.duration){
+   mensagemVideo.textContent="Selecione um vídeo primeiro.";
+   return;
+  }
+
+  if(!window.MediaRecorder || !video.captureStream){
+   mensagemVideo.textContent=
+    "Seu navegador não oferece suporte ao corte automático. Utilize uma versão atualizada do Chrome ou Edge.";
+   return;
+  }
+
+  const segundoInicial=Number(inicio.value);
+  const segundoFinal=Number(fim.value);
+
+  if(
+   !Number.isFinite(segundoInicial) ||
+   !Number.isFinite(segundoFinal) ||
+   segundoInicial<0 ||
+   segundoFinal>video.duration ||
+   segundoFinal<=segundoInicial
+  ){
+   mensagemVideo.textContent="Confira os tempos de início e fim.";
+   return;
+  }
+
+  const duracao=segundoFinal-segundoInicial;
+
+  botao.disabled=true;
+  mensagemVideo.textContent="Preparando vídeo. Aguarde...";
+
+  let gravador=null;
+  let streamFinal=null;
+  let streamOriginal=null;
+  let animacao=null;
+
+  try{
+
+   const canvas=document.createElement("canvas");
+
+   const escala=Math.min(1,720/video.videoWidth,720/video.videoHeight);
+
+   canvas.width=Math.round(video.videoWidth*escala);
+   canvas.height=Math.round(video.videoHeight*escala);
+
+   const contexto=canvas.getContext("2d");
+
+   // Posicionar no início do corte
+
+   if(Math.abs(video.currentTime-segundoInicial)>0.05){
+
+    await new Promise(resolve=>{
+     video.addEventListener("seeked",resolve,{once:true});
+     video.currentTime=segundoInicial;
+    });
+
+   }
+
+   streamFinal=canvas.captureStream(24);
+   streamOriginal=video.captureStream();
+
+   // Preservar o áudio original
+
+   streamOriginal.getAudioTracks().forEach(track=>{
+    streamFinal.addTrack(track);
+   });
+
+   const mimeType=MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus")
+    ?"video/webm;codecs=vp8,opus"
+    :"video/webm";
+
+   const taxaTotal=Math.floor(
+    (LIMITE*8*0.82)/duracao
+   );
+
+   const taxaVideo=Math.max(
+    180000,
+    Math.min(2500000,taxaTotal-96000)
+   );
+
+   gravador=new MediaRecorder(streamFinal,{
+    mimeType:mimeType,
+    videoBitsPerSecond:taxaVideo,
+    audioBitsPerSecond:64000
+   });
+
+   const partes=[];
+
+   gravador.ondataavailable=function(event){
+    if(event.data.size>0) partes.push(event.data);
+   };
+
+   const resultado=new Promise((resolve,reject)=>{
+
+    gravador.onstop=function(){
+     resolve(new Blob(partes,{type:"video/webm"}));
+    };
+
+    gravador.onerror=function(){
+     reject(new Error("Falha durante a compressão do vídeo."));
+    };
+
+   });
+
+   gravador.start(1000);
+
+   await video.play();
+
+   function desenhar(){
+
+    if(video.paused || video.ended) return;
+
+    contexto.drawImage(video,0,0,canvas.width,canvas.height);
+    animacao=requestAnimationFrame(desenhar);
+
+   }
+
+   desenhar();
+
+   await new Promise(resolve=>{
+    setTimeout(resolve,duracao*1000);
+   });
+
+   video.pause();
+
+   if(gravador.state!=="inactive"){
+    gravador.stop();
+   }
+
+   const videoFinal=await resultado;
+
+   if(animacao) cancelAnimationFrame(animacao);
+
+   if(videoFinal.size>LIMITE){
+
+    throw new Error(
+     "O vídeo ainda ultrapassou 5 MB. Reduza a duração do trecho e tente novamente."
+    );
+
+   }
+
+   mensagemVideo.textContent="Enviando vídeo preparado...";
+
+   const nome=Date.now()+"_apresentacao.webm";
+   const caminho=user.id+"/presentation/"+nome;
+
+   const {data:antigo}=await db
+    .from("artist_profiles")
+    .select("presentation_video_url")
+    .eq("user_id",user.id)
+    .maybeSingle();
+
+   const caminhoAntigo=antigo?.presentation_video_url;
+
+   const {error:envio}=await db.storage
+    .from("artist-media")
+    .upload(caminho,videoFinal,{
+     contentType:"video/webm"
+    });
+
+   if(envio) throw envio;
+
+   const {error:atualizacao}=await db
+    .from("artist_profiles")
+    .update({presentation_video_url:caminho})
+    .eq("user_id",user.id);
+
+   if(atualizacao){
+
+    await db.storage.from("artist-media").remove([caminho]);
+    throw atualizacao;
+
+   }
+
+   if(caminhoAntigo && caminhoAntigo!==caminho){
+    await db.storage.from("artist-media").remove([caminhoAntigo]);
+   }
+
+   const {data:link}=await db.storage
+    .from("artist-media")
+    .createSignedUrl(caminho,3600);
+
+   videoSalvo.innerHTML="";
+
+   const titulo=document.createElement("h3");
+   titulo.textContent="Meu vídeo publicado";
+
+   const player=document.createElement("video");
+   player.src=link.signedUrl;
+   player.controls=true;
+   player.playsInline=true;
+   player.style.width="100%";
+   player.style.maxHeight="300px";
+   player.style.borderRadius="10px";
+
+   videoSalvo.append(titulo,player);
+
+   mensagemVideo.textContent=
+    "Vídeo publicado com sucesso! Tamanho final: "+
+    (videoFinal.size/1024/1024).toFixed(2)+" MB.";
+
+   arquivoInput.value="";
+   arquivoSelecionado=null;
+   area.style.display="none";
+
+  }catch(erro){
+
+   mensagemVideo.textContent="Não foi possível preparar o vídeo: "+erro.message;
+
+  }finally{
+
+   if(animacao) cancelAnimationFrame(animacao);
+
+   if(gravador && gravador.state!=="inactive"){
+    gravador.stop();
+   }
+
+   if(streamFinal){
+    streamFinal.getTracks().forEach(track=>track.stop());
+   }
+
+   if(streamOriginal){
+    streamOriginal.getTracks().forEach(track=>track.stop());
+   }
+
+   botao.disabled=false;
+
+  }
+
+ });
+
+}
+
 iniciarMidias();
 carregarCadastro();
+iniciarVideoApresentacao();
+
 </script>
 </body>
 </html>
