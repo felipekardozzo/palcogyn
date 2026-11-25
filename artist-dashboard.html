@@ -33,7 +33,7 @@ footer{text-align:center;color:#94a3b8;padding:20px;font-size:12px}
 <div class="container">
 <div class="card">
 <h2>Meu espaço artístico</h2>
-<p id="mensagem">Verificando sua conta...</p>
+<p id="m">Verificando sua conta...</p>
 <div id="conteudo"></div>
 </div>
 </div>
@@ -46,7 +46,7 @@ const SUPABASE_KEY = "sb_publishable_L0JjrfD0Zia0zjQ8opWnXA_Qzxwgp-p";
 const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 async function iniciar(){
-  const mensagem=document.getElementById("mensagem");
+  const m=document.getElementById("m");
   const conteudo=document.getElementById("conteudo");
 
   try{
@@ -55,7 +55,7 @@ async function iniciar(){
     if(authError) throw authError;
 
     if(!user){
-  mensagem.textContent="Você precisa entrar na sua conta.";
+  m.textContent="Você precisa entrar na sua conta.";
   conteudo.innerHTML='<a class="link" href="index.html">Ir para o login</a>';
   return;
 }
@@ -76,7 +76,7 @@ async function iniciar(){
 
     if(artistaError) throw artistaError;
 
-    mensagem.textContent="Você está conectado!";
+    m.textContent="Você está conectado!";
 
     let html="";
     html+='<h3>Minha foto de perfil</h3>';
@@ -84,6 +84,13 @@ async function iniciar(){
     html+='<input type="file" id="arquivoFoto" accept="image/*">';
     html+='<button id="enviarFoto">Enviar foto</button>';
     html+='<p id="mensagemFoto"></p>';
+    html+='<hr>';
+    html+='<h3>Meu portfólio</h3>';
+    html+='<p>Publique fotos e vídeos dos seus trabalhos.</p>';
+    html+='<input type="file" id="arquivoPortfolio" accept="image/*,video/mp4">';
+    html+='<button id="enviarPortfolio">Publicar no portfólio</button>';
+    html+='<p id="mensagemPortfolio"></p>';
+    html+='<div id="listaPortfolio"></div>';
 
     html+='<p class="info"><strong>Responsável:</strong> '+escapar(perfil?.nome||"Não informado")+'</p>';
     
