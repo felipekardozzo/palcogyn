@@ -79,17 +79,9 @@ async function iniciar(){
     m.textContent="Você está conectado!";
 
     let html="";
-    html+='<h3>Minha foto de perfil</h3>';
     html+='<div id="fotoPerfil"></div>';
-    html+='<input type="file" id="arquivoFoto" accept="image/*">';
-    html+='<button id="enviarFoto">Enviar foto</button>';
-    html+='<p id="mensagemFoto"></p>';
-    html+='<hr>';
-    html+='<h3>Meu portfólio</h3>';
-    html+='<p>Publique fotos e vídeos dos seus trabalhos.</p>';
-    html+='<input type="file" id="arquivoPortfolio" accept="image/*,video/mp4">';
-    html+='<button id="enviarPortfolio">Publicar no portfólio</button>';
-    html+='<p id="mensagemPortfolio"></p>';
+    html+='<h3>Portfólio artístico</h3>';
+    html+='<p>Conheça alguns dos trabalhos e apresentações deste artista.</p>';
     html+='<div id="listaPortfolio"></div>';
 
     html+='<p class="info"><strong>Responsável:</strong> '+escapar(perfil?.nome||"Não informado")+'</p>';
