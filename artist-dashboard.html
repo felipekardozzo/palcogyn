@@ -62,7 +62,7 @@ async function iniciar(){
 
     const {data:perfil,error:perfilError}=await db
       .from("profiles")
-      .select("nome,tipo,cidade,whatsapp")
+      .select("nome,tipo,cidade,whatsapp,foto_url")   
       .eq("id",user.id)
       .maybeSingle();
 
@@ -79,6 +79,11 @@ async function iniciar(){
     mensagem.textContent="Você está conectado!";
 
     let html="";
+    html+='<h3>Minha foto de perfil</h3>';
+    html+='<div id="fotoPerfil"></div>';
+    html+='<input type="file" id="arquivoFoto" accept="image/*">';
+    html+='<button id="enviarFoto">Enviar foto</button>';
+    html+='<p id="mensagemFoto"></p>';
 
     html+='<p class="info"><strong>Responsável:</strong> '+escapar(perfil?.nome||"Não informado")+'</p>';
 
