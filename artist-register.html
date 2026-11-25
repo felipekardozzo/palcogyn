@@ -96,8 +96,11 @@ async function carregarCadastro(){
       document.getElementById("performance_fee").value=perfil.performance_fee??"";
       document.getElementById("sound_setup").value=perfil.sound_setup||"";
 
-      botao.textContent="Atualizar cadastro";
+      botao.tent="Atualizar cadastro";
       mensagem.textContent="Seu cadastro foi carregado. Você pode editar seus dados.";
+      setTimeout(()=>{
+  window.location.href="artist-dashboard.html";
+},1500);
     }else{
       botao.textContent="Salvar cadastro";
       mensagem.textContent="Preencha seus dados para criar seu perfil artístico.";
