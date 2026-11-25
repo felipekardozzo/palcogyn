@@ -157,18 +157,18 @@ document.getElementById("signupForm").addEventListener("submit", async function(
   const password = document.getElementById("senhaCadastro").value;
 
   const { data, error } = await db.auth.signUp({
-    email: email,
-    password: password,
-    options: {
-      data: {
-        nome: nome,
-        tipo: tipo,
-        whatsapp: whatsapp,
-        cidade: cidade
-      }
+  email: email,
+  password: password,
+  options: {
+    emailRedirectTo: "https://felipekardozzo.github.io/palcogyn/",
+    data: {
+      nome: nome,
+      tipo: tipo,
+      whatsapp: whatsapp,
+      cidade: cidade
     }
-  });
-
+  }
+});
   if (error) {
     showMessage("Não foi possível criar a conta: " + error.message);
     return;
