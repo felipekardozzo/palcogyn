@@ -356,26 +356,28 @@ async function abrirFicha(userId){
  contato.innerHTML="";
 
  campo(dados,"Nome artístico",a.artist_name);
- campo(dados,"ID PALCOGYN",a.id_palcogyn);
- campo(dados,"Tipo de artista",a.artist_type);
- campo(dados,"Modalidade de apresentação",a.performance_type);
- campo(dados,"Estilos musicais",a.music_styles);
- campo(dados,"Cidade",a.city);
- campo(dados,"Estado",a.state);
- campo(dados,"Cachê informado",moeda(a.performance_fee));
- campo(dados,"Estrutura de som",a.sound_setup);
- campo(dados,"Limite de armazenamento",valor(a.storage_quota_mb)+" MB");
- campo(dados,"Data de cadastro",dataFormatada(a.created_at));
- campo(dados,"Última atualização",dataFormatada(a.updated_at));
+campo(dados,"ID PALCOGYN",a.id_palcogyn);
+campo(dados,"Tipo de artista",a.artist_type);
 
- campo(contato,"Nome do responsável",a.profiles?.nome);
- campo(contato,"WhatsApp",a.profiles?.whatsapp);
- campo(contato,"Cidade do perfil",a.profiles?.cidade);
+campo(artistic,"Modalidade de apresentação",a.performance_type);
+campo(artistic,"Estilos musicais",a.music_styles);
+campo(artistic,"Cidade",a.city);
+campo(artistic,"Estado",a.state);
+campo(artistic,"Cachê informado",moeda(a.performance_fee));
+campo(artistic,"Estrutura de som",a.sound_setup);
 
- document.getElementById("detailMessage").innerText="";
- document.getElementById("detailContent").classList.remove("hidden");
+campo(admin,"Limite de armazenamento",valor(a.storage_quota_mb)+" MB");
+campo(admin,"Data de cadastro",dataFormatada(a.created_at));
+campo(admin,"Última atualização",dataFormatada(a.updated_at));
 
- await carregarPortfolio(userId);
+campo(contato,"Nome do responsável",a.profiles?.nome);
+campo(contato,"WhatsApp",a.profiles?.whatsapp);
+campo(contato,"Cidade do perfil",a.profiles?.cidade);
+
+document.getElementById("detailMessage").innerText="";
+document.getElementById("detailContent").classList.remove("hidden");
+
+await carregarPortfolio(userId);
 }
 
 async function carregarPortfolio(userId){
