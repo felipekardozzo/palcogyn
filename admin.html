@@ -181,6 +181,7 @@ const SUPABASE_KEY = "sb_publishable_L0JjrfD0Zia0zjQ8opWnXA_Qzxwgp-p";
 const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 let artistas = [];
+let artistaAtual = null;
 
 function valor(v){
  if(v===null || v===undefined || v==="") return "Não informado";
@@ -350,6 +351,7 @@ function filtrarArtistas(){
 
 async function abrirFicha(userId){
  const a=artistas.find(x=>x.user_id===userId);
+  artistaAtual = a;
  if(!a) return;
 
  document.getElementById("artistsSection").classList.add("hidden");
