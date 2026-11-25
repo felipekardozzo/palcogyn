@@ -80,7 +80,7 @@ Você poderá escolher o trecho e ajustar o tamanho antes de salvar.
 
 <label>Selecionar vídeo</label>
 <input type="file"
- id="arquivoApresentacao"
+ id="arquivo"
  accept="video/mp4,video/webm,video/quicktime">
 
 <div id="areaVideo" style="display:none;margin-top:15px;">
@@ -1222,7 +1222,8 @@ async function iniciarVideoApresentacao(){
 
  // SELECIONAR E VISUALIZAR VÍDEO
 
- arquivoInput.addEventListener("change",function(){
+ 
+arquivoInput.addEventListener("change",function(){
 
   const arquivo=this.files[0];
 
@@ -1231,6 +1232,17 @@ async function iniciarVideoApresentacao(){
   if(!arquivo.type.startsWith("video/")){
    mensagemVideo.textContent="Selecione um arquivo de vídeo.";
    this.value="";
+   return;
+  }
+
+  const limiteMB=5*1024*1024;
+
+  if(arquivo.size>limiteMB){
+   alert("Vídeo acima do limite! O tamanho máximo permitido é 5 MB.");
+   mensagemVideo.textContent="Selecione um vídeo de até 5 MB.";
+   this.value="";
+   arquivoSelecionado=null;
+   area.style.display="none";
    return;
   }
 
@@ -1247,16 +1259,31 @@ async function iniciarVideoApresentacao(){
 
   video.onloadedmetadata=function(){
 
+   if(video.duration>45){
+    alert("Vídeo acima do limite! A duração máxima permitida é 45 segundos.");
+    mensagemVideo.textContent="Selecione um vídeo com até 45 segundos.";
+    arquivoInput.value="";
+    arquivoSelecionado=null;
+    video.pause();
+    video.removeAttribute("src");
+    video.load();
+    area.style.display="none";
+    return;
+   }
+
    inicio.value="0";
    fim.value=video.duration.toFixed(1);
 
    mensagemVideo.textContent=
-    "Duração original: "+video.duration.toFixed(1)+" segundos. Escolha o trecho desejado.";
+    "Vídeo aprovado! Duração: "+
+    video.duration.toFixed(1)+
+    " segundos. Tamanho: "+
+    (arquivo.size/1024/1024).toFixed(2)+
+    " MB.";
 
   };
 
- });
-
+});
  // PREPARAR, CORTAR E COMPRIMIR
 
  botao.addEventListener("click",async function(){
