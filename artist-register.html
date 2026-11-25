@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastro de Artista | PalcoGyn</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+body{font-family:Arial,sans-serif;background:#101827;color:white;margin:0;padding:20px}
+.container{max-width:650px;margin:25px auto;background:#1d293b;padding:25px;border-radius:14px}
+h1{color:#38bdf8;text-align:center}
+p{text-align:center;color:#cbd5e1}
+label{display:block;margin-top:15px;font-weight:bold}
+input,select,textarea{width:100%;box-sizing:border-box;padding:12px;margin-top:6px;border-radius:7px;border:1px solid #475569;background:#0f172a;color:white}
+button{width:100%;padding:14px;margin-top:22px;background:#0284c7;color:white;border:0;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer}
+#mensagem{margin-top:15px;text-align:center;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>PALCOGYN</h1>
+<p>TALENTOS • EVENTOS • CONEXÕES</p>
+<h2>Cadastro de artista</h2>
+<form id="artistForm">
+<label>Nome artístico</label>
+<input id="artist_name" required>
+
+<label>Tipo de artista</label>
+<select id="artist_type" required>
+<option value="">Selecione</option>
+<option>Cantor(a)</option>
+<option>Músico(a)</option>
+<option>Banda</option>
+<option>DJ</option>
+</select>
+
+<label>Tipo de apresentação</label>
+<input id="performance_type" placeholder="Ex.: Solo, dupla, banda completa">
+
+<label>Estilos musicais</label>
+<input id="music_styles" placeholder="Ex.: Sertanejo, pagode, forró">
+
+<label>Biografia / Apresentação</label>
+<textarea id="bio" rows="4" placeholder="Conte um pouco sobre sua trajetória"></textarea>
+
+<label>Cidade</label>
+<input id="city" required>
+
+<label>Estado (UF)</label>
+<input id="state" maxlength="2" placeholder="GO" required>
+
+<label>Cachê por apresentação (R$)</label>
+<input id="performance_fee" type="number" min="0" step="0.01" required>
+
+<label>Estrutura de som necessária</label>
+<textarea id="sound_setup" rows="3"></textarea>
+
+<label>Equipamentos próprios</label>
+<textarea id="equipment_owned" rows="3"></textarea>
+
+<label>Equipamentos necessários</label>
+<textarea id="equipment_needed" rows="3"></textarea>
+
+<button type="submit">Salvar cadastro</button>
+</form>
+<div id="mensagem"></div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://nocwkiobwjpuygsbnyhn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_L0JjrfD0Zia0zjQ8opWnXA_Qzxwgp-p";
+const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+document.getElementById("artistForm").addEventListener("submit",async function(e){
+e.preventDefault();
+const mensagem=document.getElementById("mensagem");
+mensagem.textContent="Salvando cadastro...";
+
+try{
+const {data:{user},error:authError}=await db.auth.getUser();
+if(authError) throw authError;
+if(!user) throw new Error("Faça login antes de cadastrar seu perfil artístico.");
+
+const musicStyles=document.getElementById("music_styles").value
+.split(",").map(x=>x.trim()).filter(Boolean);
+
+const perfil={
+user_id:user.id,
+artist_name:document.getElementById("artist_name").value.trim(),
+artist_type:document.getElementById("artist_type").value,
+performance_type:document.getElementById("performance_type").value.trim(),
+music_styles:musicStyles,
+bio:document.getElementById("bio").value.trim(),
+city:document.getElementById("city").value.trim(),
+state:document.getElementById("state").value.trim().toUpperCase(),
+performance_fee:Number(document.getElementById("performance_fee").value),
+sound_setup:document.getElementById("sound_setup").value.trim(),
+equipment_owned:document.getElementById("equipment_owned").value.trim(),
+equipment_needed:document.getElementById("equipment_needed").value.trim()
+};
+
+const {error}=await db.from("artist_profiles").upsert(perfil,{onConflict:"user_id"});
+if(error) throw error;
+
+mensagem.textContent="Cadastro artístico salvo com sucesso!";
+}catch(error){
+mensagem.textContent="Não foi possível salvar: "+error.message;
+}
+});
+</script>
+</body>
+</html>
