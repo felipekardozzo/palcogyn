@@ -568,11 +568,11 @@ async function iniciarVideoApresentacao(){
   video.onloadedmetadata=function(){
 
    inicio.value="0";
-   fim.value=video.duration.toFixed(1);
+fim.value=Math.min(video.duration,45).toFixed(1);
 
-   mensagemVideo.textContent=
-    "Duração original: "+video.duration.toFixed(1)+" segundos. Escolha o trecho desejado.";
-
+mensagemVideo.textContent=
+ "Escolha um trecho de até 45 segundos. Duração original: "+
+ video.duration.toFixed(1)+" segundos.";
   };
 
  });
