@@ -201,7 +201,73 @@ footer{
  padding:25px;
  font-size:12px;
 }
+/* GALERIA PROFISSIONAL */
 
+.portfolio-item{
+ cursor:pointer;
+ transition:transform .25s ease,box-shadow .25s ease;
+}
+
+.portfolio-item:hover{
+ transform:translateY(-5px);
+ box-shadow:0 12px 28px rgba(0,0,0,.4);
+}
+
+.portfolio-item img{
+ transition:transform .35s ease;
+}
+
+.portfolio-item:hover img{
+ transform:scale(1.04);
+}
+
+/* VISUALIZADOR AMPLIADO */
+
+.lightbox{
+ display:none;
+ position:fixed;
+ inset:0;
+ z-index:9999;
+ background:rgba(2,6,23,.96);
+ align-items:center;
+ justify-content:center;
+ padding:25px;
+}
+
+.lightbox.ativo{
+ display:flex;
+}
+
+.lightbox-conteudo{
+ max-width:1000px;
+ max-height:90vh;
+ width:100%;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+}
+
+.lightbox-conteudo img,
+.lightbox-conteudo video{
+ max-width:100%;
+ max-height:85vh;
+ object-fit:contain;
+ border-radius:12px;
+}
+
+.lightbox-fechar{
+ position:absolute;
+ top:18px;
+ right:25px;
+ width:48px;
+ height:48px;
+ border:0;
+ border-radius:50%;
+ background:#0284c7;
+ color:white;
+ font-size:28px;
+ cursor:pointer;
+}
 @media(max-width:600px){
  .card{padding:18px}
  .artist-hero{
@@ -229,7 +295,10 @@ footer{
 </div>
 
 </div>
-
+<div id="lightbox" class="lightbox">
+ <button class="lightbox-fechar" id="fecharLightbox">×</button>
+ <div id="lightboxConteudo" class="lightbox-conteudo"></div>
+</div>
 <footer>PalcoGyn — Descubra novos talentos.</footer>
 
 <script>
