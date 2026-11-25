@@ -213,7 +213,7 @@ async function verificarAcesso(){
   if(adminError) throw adminError;
 
   if(!admin || admin.admin_role!=="super_admin" || admin.is_active!==true){
-   document.getElementById("loading").class.add("hidden");
+   document.getElementById("loading").classList.add("hidden");
    document.getElementById("denied").classList.remove("hidden");
    return;
   }
