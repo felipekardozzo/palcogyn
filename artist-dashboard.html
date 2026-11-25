@@ -84,6 +84,7 @@ async function iniciar(){
 
     if(artista){
       html+='<p class="info"><strong>Nome artístico:</strong> '+escapar(artista.artist_name||"Não informado")+'</p>';
+      html+='<p class="info"><strong>ID PALCOGYN:</strong> '+escapar(artista.id_palcogyn||"Não disponível")+'</p>';
       html+='<p class="info"><strong>Categoria:</strong> '+escapar(artista.artist_type||"Não informado")+'</p>';
       html+='<p class="info"><strong>Apresentação:</strong> '+escapar(artista.performance_type||"Não informado")+'</p>';
       html+='<p class="info"><strong>Estilos:</strong> '+escapar((artista.music_styles||[]).join(", ")||"Não informado")+'</p>';
