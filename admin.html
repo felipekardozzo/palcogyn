@@ -153,14 +153,17 @@ footer{text-align:center;color:#8998ad;padding:25px;font-size:12px}
 <div id="adminEditArea" class="hidden">
   <h3>Editar dados administrativos</h3>
 
+ <div class="admin-edit-field">
   <label for="editSoundSetup">Estrutura de som</label>
   <textarea id="editSoundSetup" rows="4"></textarea>
+</div>
 
+<div class="admin-edit-field">
   <label for="editStorageQuota">Limite de armazenamento (MB)</label>
   <input id="editStorageQuota" type="number" min="1" value="100">
-
-  <button type="button" onclick="salvarDadosArtista()">Salvar alterações</button>
 </div>
+
+<button type="button" onclick="salvarDadosArtista()">Salvar alterações</button>
 
 <h3>Contato e responsável</h3>
 <div id="contactFields" class="detailgrid"></div>
