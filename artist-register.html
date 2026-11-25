@@ -98,9 +98,7 @@ async function carregarCadastro(){
 
       botao.tent="Atualizar cadastro";
       mensagem.textContent="Seu cadastro foi carregado. Você pode editar seus dados.";
-      setTimeout(()=>{
-  window.location.href="artist-dashboard.html";
-},1500);
+     
     }else{
       botao.textContent="Salvar cadastro";
       mensagem.textContent="Preencha seus dados para criar seu perfil artístico.";
@@ -145,7 +143,9 @@ formulario.addEventListener("submit",async function(e){
 
     botao.textContent="Atualizar cadastro";
     mensagem.textContent="Cadastro artístico atualizado com sucesso!";
-
+setTimeout(()=>{
+  window.location.href="artist-dashboard.html";
+},1500);
   }catch(error){
     mensagem.textContent="Não foi possível salvar: "+error.message;
   }
