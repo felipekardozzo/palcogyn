@@ -69,7 +69,7 @@ footer{text-align:center;color:#8998ad;padding:25px;font-size:12px}
 <div class="card">
 <h3>Artistas</h3>
 <p>Consultar cadastros e portfólios dos artistas.</p>
-<button onclick="abrirArtistas()">Gerenciar artistas</button>
+<button onclick="Artistas()">Gerenciar artistas</button>
 </div>
 <div class="card">
 <h3>Contratantes</h3>
@@ -348,7 +348,52 @@ function filtrarArtistas(){
 
   mostrarArtistas(filtrados);
 }
+async function abrirFicha(userId){
+  const a = artistas.find(x => x.user_id === userId);
+  if(!a) return;
 
+  artistaAtual = a;
+
+  document.getElementById("artistsSection").classList.add("hidden");
+  document.getElementById("artistDetails").classList.remove("hidden");
+  document.getElementById("detailContent").classList.add("hidden");
+  document.getElementById("detailMessage").innerText = "Carregando informações...";
+  document.getElementById("detailArtistName").innerText = a.artist_name || "Ficha do artista";
+
+  const dados = document.getElementById("detailFields");
+  const artistic = document.getElementById("artisticFields");
+  const admin = document.getElementById("adminFields");
+  const contato = document.getElementById("contactFields");
+
+  dados.innerHTML = "";
+  artistic.innerHTML = "";
+  admin.innerHTML = "";
+  contato.innerHTML = "";
+
+  campo(dados, "Nome artístico", a.artist_name);
+  campo(dados, "ID PALCOGYN", a.id_palcogyn);
+  campo(dados, "Tipo de artista", a.artist_type);
+
+  campo(artistic, "Modalidade de apresentação", a.performance_type);
+  campo(artistic, "Estilos musicais", a.music_styles);
+  campo(artistic, "Cidade", a.city);
+  campo(artistic, "Estado", a.state);
+  campo(artistic, "Cachê informado", moeda(a.performance_fee));
+  campo(artistic, "Estrutura de som", a.sound_setup);
+
+  campo(admin, "Limite de armazenamento", valor(a.storage_quota_mb) + " MB");
+  campo(admin, "Data de cadastro", dataFormatada(a.created_at));
+  campo(admin, "Última atualização", dataFormatada(a.updated_at));
+
+  campo(contato, "Nome do responsável", a.profiles?.nome);
+  campo(contato, "WhatsApp", a.profiles?.whatsapp);
+  campo(contato, "Cidade do perfil", a.profiles?.cidade);
+
+  document.getElementById("detailMessage").innerText = "";
+  document.getElementById("detailContent").classList.remove("hidden");
+
+  await carregarPortfolio(userId);
+}
 function abrirEdicaoArtista(){
   if(!artistaAtual) return;
 
