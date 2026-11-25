@@ -4,176 +4,219 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PalcoGyn | Talentos, Eventos e Conexões</title>
+<title>PalcoGyn | Acesso</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #080e22;
-    color: white;
-}
-
-header {
-    padding: 22px 7%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #263052;
-}
-
-.logo {
-    font-size: 27px;
-    font-weight: bold;
-    color: #fff;
-}
-
-.logo span {
-    color: #8b5cf6;
-}
-
-header small {
-    color: #a5b4fc;
-    letter-spacing: 2px;
-}
-
-.hero {
-    text-align: center;
-    padding: 75px 20px 45px;
-}
-
-.hero h1 {
-    font-size: 42px;
-    margin-bottom: 15px;
-}
-
-.hero h1 span {
-    color: #8b5cf6;
-}
-
-.hero p {
-    color: #b8c1dc;
-    font-size: 17px;
-    line-height: 1.6;
-}
-
-.cards {
-    display: flex;
-    justify-content: center;
-    gap: 25px;
-    flex-wrap: wrap;
-    padding: 25px 20px 70px;
-}
-
-.card {
-    background: #121c38;
-    border: 1px solid #34416a;
-    border-radius: 18px;
-    padding: 32px;
-    width: 310px;
-    text-align: center;
-}
-
-.card h2 {
-    margin-top: 10px;
-}
-
-.card p {
-    color: #b8c1dc;
-    line-height: 1.5;
-}
-
-.icon {
-    font-size: 48px;
-}
-
-button {
-    background: linear-gradient(90deg, #7045e8, #2786ed);
-    color: white;
-    border: 0;
-    border-radius: 9px;
-    padding: 14px 22px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 15px;
-}
-
-button:hover {
-    opacity: 0.85;
-}
-
-footer {
-    text-align: center;
-    padding: 25px;
-    color: #8995b8;
-    border-top: 1px solid #263052;
-}
-
-@media(max-width: 600px) {
-    .hero h1 {
-        font-size: 30px;
-    }
-}
+*{box-sizing:border-box}
+body{margin:0;background:#080e22;color:white;font-family:Arial,sans-serif}
+header{padding:22px;text-align:center;border-bottom:1px solid #263052}
+.logo{font-size:30px;font-weight:bold}
+.logo span{color:#8b5cf6}
+header p{color:#a5b4dc;font-size:11px;letter-spacing:2px}
+main{max-width:440px;margin:45px auto;padding:20px}
+.card{background:#121c38;border:1px solid #34416a;border-radius:18px;padding:28px}
+h1{text-align:center;font-size:26px}
+.subtitle{text-align:center;color:#b8c1dc;line-height:1.5}
+.tabs{display:flex;gap:8px;margin:24px 0}
+.tabs button{width:50%;background:#263452}
+.tabs button.active{background:#7045e8}
+label{display:block;margin:15px 0 7px;color:#dce4ff}
+input,select{width:100%;padding:14px;border-radius:8px;border:1px solid #465477;background:#080e22;color:white;font-size:15px}
+button{border:0;border-radius:8px;padding:14px;color:white;font-weight:bold;font-size:15px;cursor:pointer}
+.primary{width:100%;margin-top:22px;background:linear-gradient(90deg,#7045e8,#2786ed)}
+.secondary{width:100%;margin-top:12px;background:#263452}
+.hidden{display:none}
+#message{margin-top:18px;line-height:1.5;text-align:center;color:#a5b4dc}
+footer{text-align:center;color:#8995b8;padding:25px;font-size:13px}
 </style>
 </head>
 
 <body>
-
 <header>
-    <div class="logo">PALCO<span>GYN</span></div>
-    <small>TALENTOS • EVENTOS • CONEXÕES</small>
+  <div class="logo">PALCO<span>GYN</span></div>
+  <p>TALENTOS • EVENTOS • CONEXÕES</p>
 </header>
 
-<section class="hero">
-    <h1>Seu talento merece um <span>palco!</span></h1>
+<main>
+  <section class="card" id="access">
+    <h1>Bem-vindo ao PalcoGyn</h1>
+    <p class="subtitle">Conectando artistas a oportunidades e eventos.</p>
 
-    <p>
-        Descubra artistas, encontre oportunidades
-        e conecte talentos aos melhores eventos.
-        <br>
-        O próximo grande encontro começa aqui.
-    </p>
-</section>
-
-<section class="cards">
-
-    <div class="card">
-        <div class="icon">🎤</div>
-        <h2>Sou Artista</h2>
-        <p>
-            Divulgue seu talento, apresente seu trabalho
-            e receba propostas para shows e eventos.
-        </p>
-        <button onclick="alert('Cadastro de artistas será conectado ao Supabase na próxima etapa.')">
-            Quero divulgar meu talento
-        </button>
+    <div class="tabs">
+      <button id="loginTab" class="active" onclick="showMode('login')">Entrar</button>
+      <button id="signupTab" onclick="showMode('signup')">Cadastrar</button>
     </div>
 
-    <div class="card">
-        <div class="icon">🎪</div>
-        <h2>Sou Contratante</h2>
-        <p>
-            Encontre cantores, bandas e músicos
-            para bares, restaurantes e eventos.
-        </p>
-        <button onclick="alert('Cadastro de contratantes será conectado ao Supabase na próxima etapa.')">
-            Quero contratar artistas
-        </button>
-    </div>
+    <form id="signupForm" class="hidden">
+      <label>Meu nome</label>
+      <input id="nome" required maxlength="100" placeholder="Seu nome completo">
 
-</section>
+      <label>Quero me cadastrar como</label>
+      <select id="tipo" required>
+        <option value="cantor">Artista</option>
+        <option value="contratante">Contratante</option>
+      </select>
 
-<footer>
-    PALCOGYN © 2026
-    <br>
-    Descubra novos talentos.
-</footer>
+      <label>WhatsApp</label>
+      <input id="whatsapp" placeholder="DDD + número">
 
+      <label>Cidade</label>
+      <input id="cidade" placeholder="Sua cidade">
+
+      <label>E-mail</label>
+      <input id="emailCadastro" type="email" required autocomplete="email">
+
+      <label>Senha</label>
+      <input id="senhaCadastro" type="password" required minlength="6" autocomplete="new-password">
+
+      <button class="primary" type="submit">Criar minha conta</button>
+    </form>
+
+    <form id="loginForm">
+      <label>E-mail</label>
+      <input id="emailLogin" type="email" required autocomplete="email">
+
+      <label>Senha</label>
+      <input id="senhaLogin" type="password" required autocomplete="current-password">
+
+      <button class="primary" type="submit">Entrar no PalcoGyn</button>
+    </form>
+
+    <div id="message" role="status"></div>
+  </section>
+
+  <section class="card hidden" id="welcome">
+    <h1>Você está conectado!</h1>
+    <p class="subtitle" id="userInfo"></p>
+    <button class="secondary" onclick="logout()">Sair da conta</button>
+  </section>
+</main>
+
+<footer>PALCOGYN © 2026 — Descubra novos talentos.</footer>
+
+<script>
+const SUPABASE_URL = "https://nocwkiobwjpuygsbnyhn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_L0JjrfD0Zia0zjQ8opWnXA_Qzxwgp-p";
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const message = document.getElementById("message");
+
+function showMessage(text) {
+  message.textContent = text;
+}
+
+function showMode(mode) {
+  const signup = mode === "signup";
+  document.getElementById("signupForm").classList.toggle("hidden", !signup);
+  document.getElementById("loginForm").classList.toggle("hidden", signup);
+  document.getElementById("signupTab").classList.toggle("active", signup);
+  document.getElementById("loginTab").classList.toggle("active", !signup);
+  showMessage("");
+}
+
+async function loadUser(user) {
+  document.getElementById("access").classList.add("hidden");
+  document.getElementById("welcome").classList.remove("hidden");
+
+  const { data, error } = await db
+    .from("profiles")
+    .select("nome,tipo")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (error) {
+    document.getElementById("userInfo").textContent =
+      "Login realizado. Não foi possível carregar seu perfil.";
+    return;
+  }
+
+  if (data) {
+    const tipo = data.tipo === "cantor" ? "Artista" :
+                 data.tipo === "contratante" ? "Contratante" :
+                 data.tipo === "admin" ? "Administrador" : "Usuário";
+
+    document.getElementById("userInfo").textContent =
+      "Olá, " + data.nome + "! Acesso: " + tipo + ".";
+  } else {
+    document.getElementById("userInfo").textContent =
+      "Conta conectada. Seu perfil ainda precisa ser configurado.";
+  }
+}
+
+document.getElementById("signupForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  showMessage("Criando sua conta...");
+
+  const nome = document.getElementById("nome").value.trim();
+  const tipo = document.getElementById("tipo").value;
+  const whatsapp = document.getElementById("whatsapp").value.trim();
+  const cidade = document.getElementById("cidade").value.trim();
+  const email = document.getElementById("emailCadastro").value.trim();
+  const password = document.getElementById("senhaCadastro").value;
+
+  const { data, error } = await db.auth.signUp({
+    email: email,
+    password: password,
+    options: {
+      data: {
+        nome: nome,
+        tipo: tipo,
+        whatsapp: whatsapp,
+        cidade: cidade
+      }
+    }
+  });
+
+  if (error) {
+    showMessage("Não foi possível criar a conta: " + error.message);
+    return;
+  }
+
+  if (data.session) {
+    await loadUser(data.user);
+  } else {
+    showMessage("Cadastro iniciado! Verifique seu e-mail para confirmar a conta antes de entrar.");
+  }
+});
+
+document.getElementById("loginForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  showMessage("Verificando seus dados...");
+
+  const email = document.getElementById("emailLogin").value.trim();
+  const password = document.getElementById("senhaLogin").value;
+
+  const { data, error } = await db.auth.signInWithPassword({
+    email: email,
+    password: password
+  });
+
+  if (error) {
+    showMessage("Não foi possível entrar: " + error.message);
+    return;
+  }
+
+  await loadUser(data.user);
+});
+
+async function logout() {
+  await db.auth.signOut();
+  document.getElementById("welcome").classList.add("hidden");
+  document.getElementById("access").classList.remove("hidden");
+  document.getElementById("loginForm").reset();
+  showMode("login");
+}
+
+async function checkSession() {
+  const { data } = await db.auth.getSession();
+  if (data.session) {
+    await loadUser(data.session.user);
+  }
+}
+
+checkSession();
+</script>
 </body>
 </html>
