@@ -609,6 +609,11 @@ mensagemVideo.textContent=
    mensagemVideo.textContent="O trecho do vídeo não pode ultrapassar 45 segundos.";
    return;
   }
+  if(segundoFinal-segundoInicial>45){
+   alert("O trecho máximo permitido é de 45 segundos.");
+   mensagemVideo.textContent="Escolha um trecho de até 45 segundos.";
+   return;
+  }
   const duracao=segundoFinal-segundoInicial;
 
   botao.disabled=true;
@@ -654,14 +659,14 @@ mensagemVideo.textContent=
     ?"video/webm;codecs=vp8,opus"
     :"video/webm";
 
-   const taxaTotal=Math.floor(
-    (LIMITE*8*0.82)/duracao
-   );
+  const taxaTotal=Math.floor(
+    (LIMITE*8*0.65)/duracao
+);
 
-   const taxaVideo=Math.max(
-    180000,
-    Math.min(2500000,taxaTotal-96000)
-   );
+const taxaVideo=Math.max(
+    100000,
+    Math.min(1200000,taxaTotal-64000)
+);
 
    gravador=new MediaRecorder(streamFinal,{
     mimeType:mimeType,
