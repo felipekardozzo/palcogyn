@@ -340,9 +340,12 @@ async function abrirFicha(userId){
 
  const dados=document.getElementById("detailFields");
  const contato=document.getElementById("contactFields");
+
+ dados.innerHTML="";
  contato.innerHTML="";
- 
+
  campo(dados,"Nome artístico",a.artist_name);
+ campo(dados,"ID PALCOGYN",a.id_palcogyn);
  campo(dados,"Tipo de artista",a.artist_type);
  campo(dados,"Modalidade de apresentação",a.performance_type);
  campo(dados,"Estilos musicais",a.music_styles);
@@ -358,7 +361,7 @@ async function abrirFicha(userId){
  campo(contato,"WhatsApp",a.profiles?.whatsapp);
  campo(contato,"Cidade do perfil",a.profiles?.cidade);
 
-  document.getElementById("detailMessage").innerText="";
+ document.getElementById("detailMessage").innerText="";
  document.getElementById("detailContent").classList.remove("hidden");
 
  await carregarPortfolio(userId);
