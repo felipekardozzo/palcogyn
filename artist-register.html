@@ -1442,6 +1442,67 @@ async function iniciarVideoApresentacao(){
 
 iniciarMidias();
 carregarCadastro();
+  async function configurarExclusaoVideo(){
+
+ const botaoExcluir=document.getElementById("excluirVideo");
+ const mensagemExcluir=document.getElementById("mensagemExcluirVideo");
+ const videoSalvo=document.getElementById("videoSalvo");
+
+ const {data:{user},error}=await db.auth.getUser();
+
+ if(error || !user) return;
+
+ const {data:perfil}=await db
+  .from("artist_profiles")
+  .select("presentation_video_url")
+  .eq("user_id",user.id)
+  .maybeSingle();
+
+ if(!perfil?.presentation_video_url) return;
+
+ botaoExcluir.style.display="block";
+
+ botaoExcluir.addEventListener("click",async()=>{
+
+  if(!confirm("Tem certeza que deseja excluir seu vídeo de apresentação?")){
+   return;
+  }
+
+  botaoExcluir.disabled=true;
+  mensagemExcluir.textContent="Excluindo vídeo...";
+
+  const caminho=perfil.presentation_video_url;
+
+  const {error:exclusao}=await db.storage
+   .from("artist-media")
+   .remove([caminho]);
+
+  if(exclusao){
+   mensagemExcluir.textContent="Erro ao excluir arquivo: "+exclusao.message;
+   botaoExcluir.disabled=false;
+   return;
+  }
+
+  const {error:atualizacao}=await db
+   .from("artist_profiles")
+   .update({presentation_video_url:null})
+   .eq("user_id",user.id);
+
+  if(atualizacao){
+   mensagemExcluir.textContent="Arquivo excluído, mas não foi possível atualizar o cadastro: "+atualizacao.message;
+   botaoExcluir.disabled=false;
+   return;
+  }
+
+  videoSalvo.innerHTML="";
+  botaoExcluir.style.display="none";
+  mensagemExcluir.textContent="Vídeo de apresentação excluído com sucesso!";
+
+ });
+
+}
+
+configurarExclusaoVideo();
 iniciarVideoApresentacao();
 
 </script>
