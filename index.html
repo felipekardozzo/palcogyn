@@ -175,19 +175,6 @@ async function loadUser(user) {
   }
 }
 
-  if (data) {
-    const tipo = data.tipo === "cantor" ? "Artista" :
-                 data.tipo === "contratante" ? "Contratante" :
-                 data.tipo === "admin" ? "Administrador" : "Usuário";
-
-    document.getElementById("userInfo").textContent =
-      "Olá, " + data.nome + "! Acesso: " + tipo + ".";
-  } else {
-    document.getElementById("userInfo").textContent =
-      "Conta conectada. Seu perfil ainda precisa ser configurado.";
-  }
-}
-
 document.getElementById("signupForm").addEventListener("submit", async function(e) {
   e.preventDefault();
   showMessage("Criando sua conta...");
