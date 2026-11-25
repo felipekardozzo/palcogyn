@@ -349,50 +349,47 @@ function filtrarArtistas(){
   mostrarArtistas(filtrados);
 }
 
-async function abrirFicha(userId){
- const a=artistas.find(x=>x.user_id===userId);
-  artistaAtual = a;
- if(!a) return;
+function abrirEdicaoArtista(){
+  if(!artistaAtual) return;
 
- document.getElementById("artistsSection").classList.add("hidden");
- document.getElementById("artistDetails").classList.remove("hidden");
- document.getElementById("detailContent").classList.add("hidden");
- document.getElementById("detailMessage").innerText="Carregando informações...";
- document.getElementById("detailArtistName").innerText=a.artist_name || "Ficha do artista";
+  document.getElementById("editSoundSetup").value =
+    artistaAtual.sound_setup || "";
 
- const dados=document.getElementById("detailFields");
- const artistic=document.getElementById("artisticFields");
- const admin=document.getElementById("adminFields");
- const contato=document.getElementById("contactFields");
+  document.getElementById("editStorageQuota").value =
+    artistaAtual.storage_quota_mb || 100;
 
- dados.innerHTML="";
- artistic.innerHTML="";
- admin.innerHTML="";
- contato.innerHTML="";
+  document.getElementById("adminEditArea").classList.remove("hidden");
+}
 
- campo(dados,"Nome artístico",a.artist_name);
-campo(dados,"ID PALCOGYN",a.id_palcogyn);
-campo(dados,"Tipo de artista",a.artist_type);
+async function salvarDadosArtista(){
+  if(!artistaAtual) return;
 
-campo(artistic,"Modalidade de apresentação",a.performance_type);
-campo(artistic,"Estilos musicais",a.music_styles);
-campo(artistic,"Cidade",a.city);
-campo(artistic,"Estado",a.state);
-campo(artistic,"Cachê informado",moeda(a.performance_fee));
-campo(artistic,"Estrutura de som",a.sound_setup);
+  const soundSetup = document.getElementById("editSoundSetup").value.trim();
+  const storageQuota = Number(document.getElementById("editStorageQuota").value);
 
-campo(admin,"Limite de armazenamento",valor(a.storage_quota_mb)+" MB");
-campo(admin,"Data de cadastro",dataFormatada(a.created_at));
-campo(admin,"Última atualização",dataFormatada(a.updated_at));
+  if(!Number.isInteger(storageQuota) || storageQuota <= 0){
+    alert("Informe um limite válido de armazenamento.");
+    return;
+  }
 
-campo(contato,"Nome do responsável",a.profiles?.nome);
-campo(contato,"WhatsApp",a.profiles?.whatsapp);
-campo(contato,"Cidade do perfil",a.profiles?.cidade);
+  const { error } = await db.rpc("super_admin_update_artist", {
+    p_user_id: artistaAtual.user_id,
+    p_sound_setup: soundSetup,
+    p_storage_quota_mb: storageQuota
+  });
 
-document.getElementById("detailMessage").innerText="";
-document.getElementById("detailContent").classList.remove("hidden");
+  if(error){
+    alert("Erro ao salvar: " + error.message);
+    return;
+  }
 
-await carregarPortfolio(userId);
+  artistaAtual.sound_setup = soundSetup;
+  artistaAtual.storage_quota_mb = storageQuota;
+
+  alert("Dados atualizados com sucesso!");
+  document.getElementById("adminEditArea").classList.add("hidden");
+
+  await abrirFicha(artistaAtual.user_id);
 }
 
 async function carregarPortfolio(userId){
