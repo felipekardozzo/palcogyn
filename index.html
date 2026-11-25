@@ -124,7 +124,7 @@ async function loadUser(user) {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (error) {
+   (error) {
     showMessage("Não foi possível carregar seu perfil: " + error.message);
     return;
   }
@@ -158,10 +158,19 @@ async function loadUser(user) {
 
   // ADMINISTRADOR
   if (data.tipo === "admin") {
-    document.getElementById("access").classList.add("hidden");
-    document.getElementById("welcome").classList.remove("hidden");
-    document.getElementById("userInfo").textContent =
-      "Olá, " + data.nome + "! Acesso: Administrador.";
+    const { data: admin, error } = await supabase
+      .from("admin_users")
+      .select("admin_role,is_active")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (error || !admin || !admin.is_active) {
+      alert("Acesso administrativo não autorizado.");
+      await supabase.auth.signOut();
+      return;
+    }
+
+    window.location.href = "admin.html";
     return;
   }
 
