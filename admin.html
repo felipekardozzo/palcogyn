@@ -119,6 +119,7 @@ footer{text-align:center;color:#8998ad;padding:25px;font-size:12px}
 <table id="artistTable" class="hidden">
 <thead>
 <tr>
+<th>ID PALCOGYN</th>
 <th>Nome artístico</th>
 <th>Responsável</th>
 <th>Cidade</th>
@@ -287,6 +288,7 @@ function mostrarArtistas(lista){
  lista.forEach(a=>{
   const tr=document.createElement("tr");
   const valores=[
+   a.id_palcogyn,
    a.artist_name,
    a.profiles?.nome,
    [a.city,a.state].filter(Boolean).join(" / "),
