@@ -9,33 +9,225 @@
 
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#0f172a;color:#fff}
-header{background:#102c50;padding:22px;text-align:center}
-header h1{margin:0;color:#38bdf8}
-header p{margin:7px 0 0;color:#bae6fd;font-size:13px}
-.container{max-width:750px;margin:25px auto;padding:20px}
-.card{background:#1e293b;padding:22px;border-radius:14px;margin-bottom:18px}
-h2{color:#38bdf8;margin-top:0}
-.info{color:#cbd5e1;line-height:1.8}
-button,.link{display:block;width:100%;padding:14px;margin-top:12px;border:0;border-radius:8px;background:#0284c7;color:white;font-weight:bold;text-align:center;text-decoration:none;cursor:pointer}
-.secondary{background:#334155}
-#mensagem{color:#fbbf24;white-space:pre-wrap}
-footer{text-align:center;color:#94a3b8;padding:20px;font-size:12px}
+
+body{
+ margin:0;
+ font-family:Arial,sans-serif;
+ background:#0b1424;
+ color:#fff;
+}
+
+header{
+ background:linear-gradient(135deg,#102c50,#075985);
+ padding:25px 15px;
+ text-align:center;
+ border-bottom:1px solid #25638b;
+}
+
+header h1{
+ margin:0;
+ color:#38bdf8;
+ letter-spacing:2px;
+}
+
+header p{
+ color:#bae6fd;
+ font-size:13px;
+ margin-bottom:0;
+}
+
+.container{
+ max-width:950px;
+ margin:30px auto;
+ padding:15px;
+}
+
+.card{
+ background:#172438;
+ border:1px solid #293c55;
+ padding:25px;
+ border-radius:16px;
+ margin-bottom:20px;
+ box-shadow:0 8px 25px rgba(0,0,0,.2);
+}
+
+.artist-hero{
+ display:flex;
+ align-items:center;
+ gap:25px;
+ flex-wrap:wrap;
+}
+
+.avatar{
+ width:145px;
+ height:145px;
+ border-radius:50%;
+ object-fit:cover;
+ border:4px solid #38bdf8;
+ background:#263b54;
+}
+
+.artist-name{
+ font-size:28px;
+ margin:0 0 8px;
+ color:#fff;
+}
+
+.artist-id{
+ color:#38bdf8;
+ font-size:13px;
+ font-weight:bold;
+}
+
+.artist-category{
+ color:#cbd5e1;
+ margin-top:10px;
+}
+
+h2{
+ color:#38bdf8;
+ margin-top:0;
+}
+
+h3{
+ color:#bae6fd;
+}
+
+.info{
+ color:#cbd5e1;
+ line-height:1.6;
+ margin:0;
+}
+
+.details-grid{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+ gap:14px;
+ margin-top:20px;
+}
+
+.detail{
+ background:#0f1d30;
+ border:1px solid #30445e;
+ padding:16px;
+ border-radius:10px;
+}
+
+.detail strong{
+ display:block;
+ color:#38bdf8;
+ font-size:12px;
+ margin-bottom:7px;
+ text-transform:uppercase;
+}
+
+.detail span{
+ color:#fff;
+ line-height:1.5;
+}
+
+.bio{
+ color:#cbd5e1;
+ line-height:1.8;
+ white-space:pre-wrap;
+}
+
+.portfolio-grid{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+ gap:16px;
+ margin-top:20px;
+}
+
+.portfolio-item{
+ background:#0f1d30;
+ border:1px solid #30445e;
+ border-radius:12px;
+ overflow:hidden;
+ position:relative;
+}
+
+.portfolio-item img,
+.portfolio-item video{
+ display:block;
+ width:100%;
+ height:230px;
+ object-fit:cover;
+ background:#000;
+}
+
+.portfolio-item video{
+ object-fit:contain;
+}
+
+.destaque{
+ color:#fbbf24;
+ font-size:12px;
+ font-weight:bold;
+ padding:10px;
+}
+
+button,.link{
+ display:block;
+ width:100%;
+ padding:14px;
+ margin-top:12px;
+ border:0;
+ border-radius:9px;
+ background:#0284c7;
+ color:white;
+ font-weight:bold;
+ text-align:center;
+ text-decoration:none;
+ cursor:pointer;
+}
+
+button:hover,.link:hover{
+ background:#0369a1;
+}
+
+.secondary{
+ background:#334155;
+}
+
+#mensagem{
+ color:#fbbf24;
+ white-space:pre-wrap;
+}
+
+footer{
+ text-align:center;
+ color:#94a3b8;
+ padding:25px;
+ font-size:12px;
+}
+
+@media(max-width:600px){
+ .card{padding:18px}
+ .artist-hero{
+  flex-direction:column;
+  text-align:center;
+ }
+ .artist-name{font-size:23px}
+ .avatar{width:130px;height:130px}
+}
 </style>
 </head>
 
 <body>
+
 <header>
 <h1>PALCOGYN</h1>
 <p>TALENTOS • EVENTOS • CONEXÕES</p>
 </header>
 
 <div class="container">
+
 <div class="card">
-<h2>Meu espaço artístico</h2>
 <p id="m">Verificando sua conta...</p>
 <div id="conteudo"></div>
 </div>
+
 </div>
 
 <footer>PalcoGyn — Descubra novos talentos.</footer>
@@ -45,275 +237,255 @@ const SUPABASE_URL = "https://nocwkiobwjpuygsbnyhn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_L0JjrfD0Zia0zjQ8opWnXA_Qzxwgp-p";
 const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-async function iniciar(){
-  const m=document.getElementById("m");
-  const conteudo=document.getElementById("conteudo");
-
-  try{
-    const {data:{user},error:authError}=await db.auth.getUser();
-
-    if(authError) throw authError;
-
-    if(!user){
-  m.textContent="Você precisa entrar na sua conta.";
-  conteudo.HTML='<a class="link" href="index.html">Ir para o login</a>';
-  return;
+function escapar(valor){
+ return String(valor).replace(/[&<>"']/g,function(c){
+  return {
+   "&":"&amp;",
+   "<":"&lt;",
+   ">":"&gt;",
+   '"':"&quot;",
+   "'":"&#39;"
+  }[c];
+ });
 }
 
-    const {data:perfil,error:perfilError}=await db
-      .from("profiles")
-      .select("nome,tipo,cidade,whatsapp,foto_url")  
-      .eq("id",user.id)
-      .maybeSingle();
+async function iniciar(){
 
-    if(perfilError) throw perfilError;
+ const m=document.getElementById("m");
+ const conteudo=document.getElementById("conteudo");
 
-    const {data:artista,error:artistaError}=await db
-      .from("artist_profiles")
-      .select("id_palcogyn,artist_name,artist_type,performance_type,music_styles,city,state,performance_fee")      
-      .eq("user_id",user.id)
-      .maybeSingle();
+ try{
 
-    if(artistaError) throw artistaError;
+  const {data:{user},error:authError}=await db.auth.getUser();
 
-    m.textContent="Você está conectado!";
+  if(authError) throw authError;
 
-    let html="";
-    html+='<div id="fotoPerfil"></div>';
-    html+='<h3>Portfólio artístico</h3>';
-    html+='<p>Conheça alguns dos trabalhos e apresentações deste artista.</p>';
-    html+='<div id="listaPortfolio"></div>';
+  if(!user){
+   m.textContent="Você precisa entrar na sua conta.";
+   conteudo.innerHTML='<a class="link" href="index.html">Ir para o login</a>';
+   return;
+  }
 
-    html+='<p class="info"><strong>Responsável:</strong> '+escapar(perfil?.nome||"Não informado")+'</p>';
-    
-    if(artista){
-      html+='<p class="info"><strong> artístico:</strong> '+escapar(artista.artist_name||"Não informado")+'</p>';
-      html+='<p class="info"><strong>ID PALCOGYN:</strong> '+escapar(artista.id_palcogyn||"Não disponível")+'</p>';
-      html+='<p class="info"><strong>Categoria:</strong> '+escapar(artista.artist_type||"Não informado")+'</p>';
-      html+='<p class="info"><strong>Apresentação:</strong> '+escapar(artista.performance_type||"Não informado")+'</p>';
-      html+='<p class="info"><strong>Estilos:</strong> '+escapar((artista.music_styles||[]).join(", ")||"Não informado")+'</p>';
-      html+='<p class="info"><strong>Local:</strong> '+escapar(artista.city||"")+' - '+escapar(artista.state||"")+'</p>';
-      html+='<p class="info"><strong>Cachê informado:</strong> R$ '+Number(artista.performance_fee||0).toLocaleString("pt-BR",{minimumFractionDigits:2})+'</p>';
-      html+='<a class="link" href="artist-register.html">Atualizar meu cadastro artístico</a>';
-    }else{
-      html+='<p class="info">Seu perfil artístico ainda não foi preenchido. Complete seu cadastro para começar a apresentar seus talentos no PalcoGyn.</p>';
-      html+='<a class="link" href="artist-register.html">Completar meu cadastro artístico</a>';
+  const {data:perfil,error:perfilError}=await db
+   .from("profiles")
+   .select("nome,tipo,cidade,whatsapp,foto_url")
+   .eq("id",user.id)
+   .maybeSingle();
+
+  if(perfilError) throw perfilError;
+
+  const {data:artista,error:artistaError}=await db
+   .from("artist_profiles")
+   .select("id_palcogyn,artist_name,artist_type,performance_type,music_styles,city,state,performance_fee,bio")
+   .eq("user_id",user.id)
+   .maybeSingle();
+
+  if(artistaError) throw artistaError;
+
+  m.textContent="Seu espaço artístico";
+
+  if(!artista){
+
+   conteudo.innerHTML=
+    '<p class="info">Seu perfil artístico ainda não foi preenchido.</p>'+
+    '<a class="link" href="artist-register.html">Completar meu cadastro artístico</a>'+
+    '<button class="secondary" id="sair">Sair da conta</button>';
+
+  }else{
+
+   const nome=artista.artist_name||"Artista";
+   const estilos=(artista.music_styles||[]).join(", ")||"Não informado";
+
+   conteudo.innerHTML=`
+
+    <div class="artist-hero">
+
+     <img id="fotoPerfil" class="avatar"
+      src=""
+      alt="Foto do artista">
+
+     <div>
+      <h2 class="artist-name">${escapar(nome)}</h2>
+
+      <div class="artist-id">
+       ID PALCOGYN: ${escapar(artista.id_palcogyn||"Não disponível")}
+      </div>
+
+      <p class="artist-category">
+       ${escapar(artista.artist_type||"Artista")}
+       ${artista.performance_type?" • "+escapar(artista.performance_type):""}
+      </p>
+     </div>
+
+    </div>
+
+    <hr style="border-color:#30445e;margin:25px 0">
+
+    <h2>Sobre o artista</h2>
+
+    <div class="details-grid">
+
+     <div class="detail">
+      <strong>Estilos musicais</strong>
+      <span>${escapar(estilos)}</span>
+     </div>
+
+     <div class="detail">
+      <strong>Localização</strong>
+      <span>${escapar(artista.city||"Não informado")} - ${escapar(artista.state||"")}</span>
+     </div>
+
+     <div class="detail">
+      <strong>Cachê informado</strong>
+      <span>R$ ${Number(artista.performance_fee||0).toLocaleString("pt-BR",{minimumFractionDigits:2})}</span>
+     </div>
+
+     <div class="detail">
+      <strong>Responsável pelo cadastro</strong>
+      <span>${escapar(perfil?.nome||"Não informado")}</span>
+     </div>
+
+    </div>
+
+    <div id="biografiaArea" style="margin-top:25px"></div>
+
+    <hr style="border-color:#30445e;margin:25px 0">
+
+    <h2>Portfólio artístico</h2>
+
+    <p class="info">
+     Conheça os trabalhos e apresentações deste artista.
+    </p>
+
+    <div id="listaPortfolio" class="portfolio-grid"></div>
+
+    <a class="link" href="artist-register.html">
+     Atualizar meu cadastro artístico
+    </a>
+
+    <button class="secondary" id="sair">
+     Sair da conta
+    </button>
+   `;
+
+   // FOTO DE PERFIL
+
+   const fotoElemento=document.getElementById("fotoPerfil");
+
+   if(perfil?.foto_url){
+
+    const {data:foto,error:erroFoto}=await db.storage
+     .from("artist-media")
+     .createSignedUrl(perfil.foto_url,3600);
+
+    if(!erroFoto && foto?.signedUrl){
+     fotoElemento.src=foto.signedUrl;
     }
 
-    html+='<button class="secondary" id="sair">Sair da conta</button>';
-    conteudo.innerHTML=html;
-    
-   
-async function carregarPortfolio(){
-  const lista=document.getElementById("listaPortfolio");
-  lista.innerHTML="Carregando publicações...";
+   }
 
-  const {data:midias,error}=await db
-    .from("artist_portfolio")
-    .select("id,artist_id,media_type,media_url,is_featured,created_at")
-    .eq("artist_id",user.id)
-    .order("created_at",{ascending:false});
+   // BIOGRAFIA
 
-  if(error){
-    lista.textContent="Erro ao carregar portfólio: "+error.message;
-    return;
-  }
+   const biografiaArea=document.getElementById("biografiaArea");
 
-  lista.innerHTML="";
+   if(artista.bio){
 
-  if(!midias || midias.length===0){
-    lista.textContent="Você ainda não publicou fotos ou vídeos.";
-    return;
-  }
+    biografiaArea.innerHTML=
+     '<h3>Apresentação</h3>'+
+     '<p class="bio">'+escapar(artista.bio)+'</p>';
 
-  for(const item of midias){
-    const {data:arquivo,error:erroArquivo}=await db.storage
+   }
+
+   // CARREGAR PORTFÓLIO
+
+   async function carregarPortfolio(){
+
+    const lista=document.getElementById("listaPortfolio");
+
+    lista.innerHTML="";
+
+    const {data:midias,error}=await db
+     .from("artist_portfolio")
+     .select("id,artist_id,media_type,media_url,is_featured,created_at")
+     .eq("artist_id",user.id)
+     .order("created_at",{ascending:false});
+
+    if(error){
+     lista.textContent="Erro ao carregar portfólio: "+error.message;
+     return;
+    }
+
+    if(!midias || midias.length===0){
+     lista.innerHTML=
+      '<p class="info">Este artista ainda não publicou fotos ou vídeos.</p>';
+     return;
+    }
+
+    for(const item of midias){
+
+     const {data:arquivo,error:erroArquivo}=await db.storage
       .from("artist-media")
       .createSignedUrl(item.media_url,3600);
 
-    if(erroArquivo || !arquivo?.signedUrl) continue;
+     if(erroArquivo || !arquivo?.signedUrl) continue;
 
-    const bloco=document.createElement("div");
-    bloco.style.margin="15px 0";
-    bloco.style.padding="12px";
-    bloco.style.background="#334155";
-    bloco.style.borderRadius="10px";
+     const bloco=document.createElement("div");
+     bloco.className="portfolio-item";
 
-    if(item.media_type==="video"){
-      bloco.innerHTML='<video controls style="width:100%;max-height:300px;border-radius:8px;"></video>';
-      bloco.querySelector("video").src=arquivo.signedUrl;
-    }else{
-      bloco.innerHTML='<img style="width:100%;max-height:300px;object-fit:contain;border-radius:8px;">';
-      bloco.querySelector("img").src=arquivo.signedUrl;
-    }
+     if(item.media_type==="video"){
 
-    if(item.is_featured){
-      const destaque=document.createElement("p");
-      destaque.textContent="Publicação em destaque";
+      const video=document.createElement("video");
+      video.controls=true;
+      video.preload="metadata";
+      video.src=arquivo.signedUrl;
+      bloco.appendChild(video);
+
+     }else{
+
+      const imagem=document.createElement("img");
+      imagem.src=arquivo.signedUrl;
+      imagem.alt="Trabalho artístico de "+nome;
+      imagem.loading="lazy";
+      bloco.appendChild(imagem);
+
+     }
+
+     if(item.is_featured){
+
+      const destaque=document.createElement("div");
+      destaque.className="destaque";
+      destaque.textContent="★ PUBLICAÇÃO EM DESTAQUE";
       bloco.appendChild(destaque);
+
+     }
+
+     lista.appendChild(bloco);
+
     }
 
-    lista.appendChild(bloco);
-  }
-}
+   }
 
-carregarPortfolio();
+   await carregarPortfolio();
 
-});
-  
-  const arquivo=document.getElementById("arquivoPortfolio").files[0];
-  const aviso=document.getElementById("mensagemPortfolio");
-
-  if(!arquivo){
-    aviso.textContent="Selecione uma foto ou vídeo.";
-    return;
   }
 
-  const ehFoto=arquivo.type.startsWith("image/");
-  const ehVideo=arquivo.type==="video/mp4";
+  // SAIR DA CONTA
 
-  if(!ehFoto && !ehVideo){
-    aviso.textContent="Envie uma imagem ou vídeo MP4.";
-    return;
-  }
-
-  if(ehFoto && arquivo.size>5*1024*1024){
-    aviso.textContent="A foto deve ter no máximo 5 MB.";
-    return;
-  }
-
-  if(ehVideo && arquivo.size>25*1024*1024){
-    aviso.textContent="O vídeo deve ter no máximo 25 MB.";
-    return;
-  }
-
-  aviso.textContent="Enviando publicação...";
-
-  const nomeArquivo=Date.now()+"_"+arquivo.name.replace(/[^a-zA-Z0-9._-]/g,"_");
-  const caminho=user.id+"/portfolio/"+nomeArquivo;
-
-  const {error:erroEnvio}=await db.storage
-    .from("artist-media")
-    .upload(caminho,arquivo);
-
-  if(erroEnvio){
-    aviso.textContent="Erro no envio: "+erroEnvio.message;
-    return;
-  }
-
-  const {error:erroCadastro}=await db
-    .from("artist_portfolio")
-    .insert({
-      artist_id:user.id,
-      media_type:ehVideo?"video":"performance_photo",
-      media_url:caminho,
-      is_featured:false
-    });
-
-  if(erroCadastro){
-    await db.storage.from("artist-media").remove([caminho]);
-    aviso.textContent="Erro ao cadastrar publicação: "+erroCadastro.message;
-    return;
-  }
-
-  aviso.textContent="Publicação enviada com sucesso!";
-  document.getElementById("arquivoPortfolio").value="";
-  await carregarPortfolio();
-});
-    if(perfil?.foto_url){
-  const {data:foto,error:erroFoto}=await db.storage
-    .from("artist-media")
-    .createSignedUrl(perfil.foto_url,3600);
-
-  if(erroFoto){
-    document.getElementById("fotoPerfil").textContent=
-      "Erro ao carregar foto: "+erroFoto.message;
-  }else if(foto?.signedUrl){
-    document.getElementById("fotoPerfil").innerHTML=
-      '<img src="'+foto.signedUrl+'" style="width:150px;height:150px;object-fit:cover;border-radius:50%;">';
-  }
-}
-
-  const arquivo=document.getElementById("arquivoFoto").files[0];
-  const aviso=document.getElementById("mensagemFoto");
-
-  if(!arquivo){
-    aviso.textContent="Selecione uma foto primeiro.";
-    return;
-  }
-
-  if(!arquivo.type.startsWith("image/")){
-    aviso.textContent="Selecione um arquivo de imagem.";
-    return;
-  }
-
-  if(arquivo.size>5*1024*1024){
-    aviso.textContent="A foto deve ter no máximo 5 MB.";
-    return;
-  }
-
-  aviso.textContent="Enviando foto...";
-
-  const fotoAntiga=perfil?.foto_url;
-  const nomeArquivo=Date.now()+"_"+arquivo.name.replace(/[^a-zA-Z0-9._-]/g,"_");
-  const caminho=user.id+"/profile/"+nomeArquivo;
-
-  const {error:erroEnvio}=await db.storage
-    .from("artist-media")
-    .upload(caminho,arquivo);
-
-  if(erroEnvio){
-    aviso.textContent="Erro ao enviar: "+erroEnvio.message;
-    return;
-  }
-
-  const {error:erroAtualizacao}=await db
-    .from("profiles")
-    .update({foto_url:caminho})
-    .eq("id",user.id);
-
-  if(erroAtualizacao){
-    aviso.textContent="Erro ao salvar a foto: "+erroAtualizacao.message;
-    return;
-  }
-if(fotoAntiga && fotoAntiga !== caminho){
-  const {error:erroExclusao}=await db.storage
-    .from("artist-media")
-    .remove([fotoAntiga]);
-
-  if(erroExclusao){
-  aviso.textContent="Nova foto salva, mas não foi possível excluir a antiga: "+erroExclusao.message;
-  return;
-}
-}
-  const {data:foto}=await db.storage
-    .from("artist-media")
-    .createSignedUrl(caminho,3600);
-
-  if(foto){
-    document.getElementById("fotoPerfil").innerHTML=
-      '<img src="'+foto.signedUrl+'" style="width:150px;height:150px;object-fit:cover;border-radius:50%;">';
-  }
-
-  aviso.textContent="Foto de perfil atualizada com sucesso!";
-});
-    document.getElementById("sair").addEventListener("click",async()=>{
-      await db.auth.signOut();
-      window.location.href="index.html";
-    });
-
-  }catch(error){
-    mensagem.textContent="Erro ao carregar seu espaço: "+error.message;
-  }
-}
-
-function escapar(valor){
-  return String(valor).replace(/[&<>"']/g,function(c){
-    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  document.getElementById("sair").addEventListener("click",async()=>{
+   await db.auth.signOut();
+   window.location.href="index.html";
   });
+
+ }catch(error){
+
+  m.textContent="Erro ao carregar seu espaço: "+error.message;
+
+ }
+
 }
 
 iniciar();
 </script>
+
 </body>
 </html>
