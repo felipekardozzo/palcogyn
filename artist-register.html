@@ -1237,14 +1237,6 @@ arquivoInput.addEventListener("change",function(){
 
   const limiteMB=5*1024*1024;
 
-  if(arquivo.size>limiteMB){
-   alert("Vídeo acima do limite! O tamanho máximo permitido é 5 MB.");
-   mensagemVideo.textContent="Selecione um vídeo de até 5 MB.";
-   this.value="";
-   arquivoSelecionado=null;
-   area.style.display="none";
-   return;
-  }
 
   arquivoSelecionado=arquivo;
 
@@ -1257,22 +1249,14 @@ arquivoInput.addEventListener("change",function(){
   area.style.display="block";
   mensagemVideo.textContent="Carregando vídeo...";
 
-  video.onloadedmetadata=function(){
-
-   if(video.duration>45){
-    alert("Vídeo acima do limite! A duração máxima permitida é 45 segundos.");
-    mensagemVideo.textContent="Selecione um vídeo com até 45 segundos.";
-    arquivoInput.value="";
-    arquivoSelecionado=null;
-    video.pause();
-    video.removeAttribute("src");
-    video.load();
-    area.style.display="none";
-    return;
-   }
+video.onloadedmetadata=function(){
 
    inicio.value="0";
-   fim.value=video.duration.toFixed(1);
+   fim.value=Math.min(video.duration,45).toFixed(1);
+
+   mensagemVideo.textContent=
+    "Vídeo carregado! Escolha um trecho de até 45 segundos. "+
+    "Duração original: "+video.duration.toFixed(1)+" segundos.";
 
    mensagemVideo.textContent=
     "Vídeo aprovado! Duração: "+
