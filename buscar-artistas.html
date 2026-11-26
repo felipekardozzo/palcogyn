@@ -207,6 +207,10 @@ async function carregarArtistas(){
  const {data,error} = await db
   .from("artist_profiles")
 .select("*");
+ console.log("TESTE DE CONEXÃO:", await db
+  .from("artist_profiles")
+  .select("*", { count: "exact" })
+);
  if(error){
   document.getElementById("mensagem").textContent =
    "Não foi possível carregar os artistas. Verifique as permissões de acesso.";
