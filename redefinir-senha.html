@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nova Senha | PalcoGyn</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080e22;color:white;font-family:Arial,sans-serif}
+header{padding:22px;text-align:center;border-bottom:1px solid #263052}
+.logo{font-size:30px;font-weight:bold}
+.logo span{color:#8b5cf6}
+header p{color:#a5b4dc;font-size:11px;letter-spacing:2px}
+main{max-width:440px;margin:45px auto;padding:20px}
+.card{background:#121c38;border:1px solid #34416a;border-radius:18px;padding:28px}
+h1{text-align:center;font-size:25px}
+p{color:#b8c1dc;line-height:1.6;text-align:center}
+label{display:block;margin:18px 0 7px;color:#dce4ff}
+input{width:100%;padding:14px;border-radius:8px;border:1px solid #465477;background:#080e22;color:white;font-size:15px}
+.password-toggle{background:transparent;color:#38bdf8;padding:8px 0;font-size:13px;margin-top:5px}
+button,.link{display:block;width:100%;padding:14px;margin-top:20px;border:0;border-radius:8px;background:linear-gradient(90deg,#7045e8,#2786ed);color:white;font-weight:bold;text-align:center;text-decoration:none;cursor:pointer}
+button:disabled{opacity:.6;cursor:not-allowed}
+#message{margin-top:18px;line-height:1.5;text-align:center;color:#a5b4dc}
+footer{text-align:center;color:#8995b8;padding:25px;font-size:13px}
+</style>
+</head>
+
+<body>
+
+<header>
+ <div class="logo">PALCO<span>GYN</span></div>
+ <p>TALENTOS • EVENTOS • CONEXÕES</p>
+</header>
+
+<main>
+ <section class="card">
+
+  <h1>Criar nova senha</h1>
+
+  <p>Escolha uma nova senha para acessar sua conta PalcoGyn.</p>
+
+  <form id="formSenha">
+
+   <label for="novaSenha">Nova senha</label>
+   <input id="novaSenha" type="password" required minlength="6" autocomplete="new-password">
+   <button type="button" class="password-toggle" onclick="togglePassword('novaSenha',this)">Mostrar senha</button>
+
+   <label for="confirmarSenha">Confirmar nova senha</label>
+   <input id="confirmarSenha" type="password" required minlength="6" autocomplete="new-password">
+   <button type="button" class="password-toggle" onclick="togglePassword('confirmarSenha',this)">Mostrar senha</button>
+
+   <button id="botaoSalvar" type="submit">Salvar nova senha</button>
+
+  </form>
+
+  <div id="message" role="status"></div>
+
+  <a class="link" href="index.html">Voltar para o login</a>
+
+ </section>
+</main>
+
+<footer>PALCOGYN © 2026 — Descubra novos talentos.</footer>
+
+<script>
+const SUPABASE_URL = "https://nocwkiobwjpuygsbnyhn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_L0JjrfD0Zia0zjQ8opWnXA_Qzxwgp-p";
+
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const formulario=document.getElementById("formSenha");
+const mensagem=document.getElementById("message");
+const botao=document.getElementById("botaoSalvar");
+
+let recuperacaoValida=false;
+
+function togglePassword(id,botao){
+
+ const campo=document.getElementById(id);
+
+ if(campo.type==="password"){
+  campo.type="text";
+  botao.textContent="Ocultar senha";
+ }else{
+  campo.type="password";
+  botao.textContent="Mostrar senha";
+ }
+
+}
+
+async function verificarRecuperacao(){
+
+ mensagem.textContent="Verificando link de recuperação...";
+
+ const {data:{session},error}=await db.auth.getSession();
+
+ if(error || !session){
+  mensagem.textContent="Link inválido ou expirado. Solicite uma nova recuperação de senha.";
+  formulario.style.display="none";
+  return;
+ }
+
+ recuperacaoValida=true;
+ mensagem.textContent="Link válido. Você já pode cadastrar sua nova senha.";
+
+}
+
+formulario.addEventListener("submit",async function(e){
+
+ e.preventDefault();
+
+ if(!recuperacaoValida){
+  mensagem.textContent="Não foi possível validar o link de recuperação.";
+  return;
+ }
+
+ const senha=document.getElementById("novaSenha").value;
+ const confirmacao=document.getElementById("confirmarSenha").value;
+
+ if(senha!==confirmacao){
+  mensagem.textContent="As senhas não são iguais.";
+  return;
+ }
+
+ botao.disabled=true;
+ mensagem.textContent="Atualizando sua senha...";
+
+ try{
+
+  const {error}=await db.auth.updateUser({
+   password:senha
+  });
+
+  if(error) throw error;
+
+  mensagem.textContent="Senha atualizada com sucesso! Você já pode entrar no PalcoGyn.";
+
+  formulario.reset();
+  formulario.style.display="none";
+
+  await db.auth.signOut();
+
+ }catch(error){
+
+  mensagem.textContent="Não foi possível atualizar a senha: "+error.message;
+
+ }finally{
+
+  botao.disabled=false;
+
+ }
+
+});
+
+db.auth.onAuthStateChange(function(event,session){
+
+ if(event==="PASSWORD_RECOVERY"){
+  recuperacaoValida=true;
+  formulario.style.display="block";
+  mensagem.textContent="Link válido. Você já pode cadastrar sua nova senha.";
+ }
+
+});
+
+verificarRecuperacao();
+</script>
+
+</body>
+</html>
