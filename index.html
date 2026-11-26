@@ -29,6 +29,17 @@ button{border:0;border-radius:8px;padding:14px;color:white;font-weight:bold;font
 .hidden{display:none}
 #message{margin-top:18px;line-height:1.5;text-align:center;color:#a5b4dc}
 footer{text-align:center;color:#8995b8;padding:25px;font-size:13px}
+  .forgot-link{
+ display:block;
+ margin-top:14px;
+ text-align:center;
+ color:#38bdf8;
+ font-size:14px;
+ text-decoration:none;
+}
+.forgot-link:hover{
+ text-decoration:underline;
+}
 </style>
 </head>
 
@@ -81,6 +92,7 @@ footer{text-align:center;color:#8995b8;padding:25px;font-size:13px}
       <input id="senhaLogin" type="password" required autocomplete="current-password">
 
       <button class="primary" type="submit">Entrar no PalcoGyn</button>
+      <a href="recuperar-senha.html" class="forgot-link">Esqueci minha senha</a>
     </form>
 
     <div id="message" role="status"></div>
