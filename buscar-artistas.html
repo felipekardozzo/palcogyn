@@ -206,8 +206,7 @@ async function verificarContratante(){
 async function carregarArtistas(){
  const {data,error} = await db
   .from("artist_profiles")
-  .select("id_palcogyn,user_id,artist_name,artist_type,performance_type,music_styles,city,state,performance_fee,bio,presentation_video_url");
-
+.select("*");
  if(error){
   document.getElementById("mensagem").textContent =
    "Não foi possível carregar os artistas. Verifique as permissões de acesso.";
