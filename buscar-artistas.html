@@ -302,10 +302,12 @@ async function mostrarResultados(lista){
   .select("id,foto_url")
   .in("id",ids);
 
-console.log("TESTE PELO ID:", teste);
+const {data:perfis,error} = await db
+  .from("profiles")
   .select("id,foto_url")
   .in("id",ids);
 
+ if(error) console.error("Erro ao carregar fotos:",error);
  if(error) console.error("Erro ao carregar fotos:",error);
 
  const fotos = {};
