@@ -1,1 +1,227 @@
 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel do Contratante | PalcoGyn</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+ margin:0;
+ font-family:Arial,sans-serif;
+ background:#080e22;
+ color:white;
+}
+
+header{
+ background:linear-gradient(135deg,#102c50,#075985);
+ padding:22px;
+ border-bottom:1px solid #25638b;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ flex-wrap:wrap;
+ gap:15px;
+}
+
+.logo h1{
+ margin:0;
+ color:#38bdf8;
+ letter-spacing:2px;
+}
+
+.logo p{
+ margin:5px 0 0;
+ color:#bae6fd;
+ font-size:12px;
+}
+
+button{
+ border:0;
+ border-radius:8px;
+ padding:12px 18px;
+ background:#0284c7;
+ color:white;
+ font-weight:bold;
+ cursor:pointer;
+}
+
+button:hover{background:#0369a1}
+
+.container{
+ max-width:1100px;
+ margin:30px auto;
+ padding:15px;
+}
+
+.welcome{
+ background:linear-gradient(135deg,#172c49,#123d60);
+ border:1px solid #25638b;
+ border-radius:16px;
+ padding:28px;
+ margin-bottom:25px;
+}
+
+.welcome h2{
+ color:#38bdf8;
+ margin-top:0;
+}
+
+.welcome p{
+ color:#cbd5e1;
+ line-height:1.6;
+}
+
+.cards{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+ gap:18px;
+}
+
+.card{
+ background:#172438;
+ border:1px solid #293c55;
+ border-radius:14px;
+ padding:23px;
+ min-height:150px;
+}
+
+.card h3{
+ color:#38bdf8;
+ margin-top:0;
+}
+
+.card p{
+ color:#cbd5e1;
+ font-size:14px;
+ line-height:1.5;
+}
+
+#mensagem{
+ text-align:center;
+ padding:30px;
+ color:#38bdf8;
+}
+
+footer{
+ text-align:center;
+ padding:25px;
+ color:#64748b;
+ font-size:12px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+ <div class="logo">
+  <h1>PALCOGYN</h1>
+  <p>TALENTOS • EVENTOS • CONEXÕES</p>
+ </div>
+
+ <button onclick="sair()">Sair da conta</button>
+</header>
+
+<div class="container">
+
+ <section class="welcome">
+  <h2 id="saudacao">Bem-vindo ao PalcoGyn!</h2>
+  <p>
+   Seu espaço para descobrir talentos, encontrar artistas
+   e conectar seus eventos à música e ao entretenimento.
+  </p>
+ </section>
+
+ <div class="cards">
+
+  <div class="card">
+   <h3>Buscar artistas</h3>
+   <p>Descubra cantores, bandas, músicos e DJs para seus eventos.</p>
+  </div>
+
+  <div class="card">
+   <h3>Minhas contratações</h3>
+   <p>Acompanhe suas solicitações e contratações de artistas.</p>
+  </div>
+
+  <div class="card">
+   <h3>Meu perfil</h3>
+   <p>Consulte seus dados e informações de contratante.</p>
+  </div>
+
+  <div class="card">
+   <h3>Central de atendimento</h3>
+   <p>Em breve, um espaço para suporte e atendimento.</p>
+  </div>
+
+ </div>
+
+ <div id="mensagem"></div>
+
+</div>
+
+<footer>
+ PalcoGyn — Descubra novos talentos.
+</footer>
+
+<script>
+
+const SUPABASE_URL = "https://nocwkiobwjpuygsbnyhn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_L0JjrfD0Zia0zjQ8opWnXA_Qzxwgp-p";
+
+const db = window.supabase.createClient(
+ SUPABASE_URL,
+ SUPABASE_KEY
+);
+
+async function carregarPainel(){
+
+ const {data:{session},error} = await db.auth.getSession();
+
+ if(error || !session){
+  window.location.href="index.html";
+  return;
+ }
+
+ const {data:perfil,error:erroPerfil} = await db
+  .from("profiles")
+  .select("nome,tipo")
+  .eq("id",session.user.id)
+  .maybeSingle();
+
+ if(erroPerfil || !perfil){
+  document.getElementById("mensagem").textContent=
+   "Não foi possível carregar seu perfil. Entre novamente.";
+  return;
+ }
+
+ if(perfil.tipo !== "contratante"){
+  await db.auth.signOut();
+  window.location.href="index.html";
+  return;
+ }
+
+ document.getElementById("saudacao").textContent=
+  "Olá, "+(perfil.nome || "Contratante")+"!";
+
+}
+
+async function sair(){
+
+ await db.auth.signOut();
+ window.location.href="index.html";
+
+}
+
+carregarPainel();
+
+</script>
+
+</body>
+</html>
