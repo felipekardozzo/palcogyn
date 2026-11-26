@@ -221,6 +221,12 @@ async function carregarArtistas(){
  }
 
  artistasCarregados = data || [];
+ const teste = await db
+  .from("artist_profiles")
+  .select("*")
+  .eq("id_palcogyn", 67176);
+
+console.log("TESTE PELO ID:", teste);
  console.log("Resposta da consulta de artistas:", {
   data: data,
   error: error
