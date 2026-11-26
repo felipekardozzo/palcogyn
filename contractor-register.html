@@ -1,0 +1,266 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastro do Contratante | PalcoGyn</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+ margin:0;
+ font-family:Arial,sans-serif;
+ background:#0b1424;
+ color:#fff;
+}
+
+header{
+ background:linear-gradient(135deg,#102c50,#075985);
+ padding:25px 15px;
+ text-align:center;
+ border-bottom:1px solid #25638b;
+}
+
+header h1{
+ margin:0;
+ color:#38bdf8;
+ letter-spacing:2px;
+}
+
+header p{
+ color:#bae6fd;
+ font-size:13px;
+}
+
+.container{
+ max-width:600px;
+ margin:35px auto;
+ padding:15px;
+}
+
+.card{
+ background:#172438;
+ border:1px solid #293c55;
+ padding:25px;
+ border-radius:16px;
+ box-shadow:0 8px 25px rgba(0,0,0,.2);
+}
+
+h2{color:#38bdf8;margin-top:0}
+
+.info{
+ color:#cbd5e1;
+ line-height:1.6;
+}
+
+label{
+ display:block;
+ margin-top:16px;
+ color:#bae6fd;
+ font-size:14px;
+}
+
+input,select{
+ width:100%;
+ padding:13px;
+ margin-top:7px;
+ border-radius:8px;
+ border:1px solid #30445e;
+ background:#0f1d30;
+ color:#fff;
+ font-size:15px;
+}
+
+button,.link{
+ display:block;
+ width:100%;
+ padding:14px;
+ margin-top:20px;
+ border:0;
+ border-radius:9px;
+ background:#0284c7;
+ color:white;
+ font-weight:bold;
+ text-align:center;
+ text-decoration:none;
+ cursor:pointer;
+}
+
+button:hover,.link:hover{background:#0369a1}
+
+button:disabled{
+ opacity:.6;
+ cursor:not-allowed;
+}
+
+#mensagem{
+ margin-top:18px;
+ color:#fbbf24;
+ line-height:1.5;
+ white-space:pre-wrap;
+}
+
+footer{
+ text-align:center;
+ color:#94a3b8;
+ padding:25px;
+ font-size:12px;
+}
+
+@media(max-width:600px){
+ .card{padding:18px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>PALCOGYN</h1>
+<p>TALENTOS • EVENTOS • CONEXÕES</p>
+</header>
+
+<div class="container">
+<div class="card">
+
+<h2>Cadastro do Contratante</h2>
+
+<p class="info">
+Cadastre-se para descobrir talentos e contratar artistas para seus eventos.
+</p>
+
+<form id="formCadastro">
+
+<label for="nome">Nome do responsável</label>
+<input id="nome" type="text" required maxlength="100"
+placeholder="Seu nome completo">
+
+<label for="estabelecimento">Estabelecimento ou empresa</label>
+<input id="estabelecimento" type="text" maxlength="120"
+placeholder="Nome do estabelecimento (opcional)">
+
+<label for="categoria">Tipo de contratante</label>
+<select id="categoria" required>
+<option value="">Selecione</option>
+<option value="Bar">Bar</option>
+<option value="Restaurante">Restaurante</option>
+<option value="Pub">Pub</option>
+<option value="Empresa">Empresa</option>
+<option value="Organizador de eventos">Organizador de eventos</option>
+<option value="Particular">Particular</option>
+<option value="Outro">Outro</option>
+</select>
+
+<label for="whatsapp">WhatsApp</label>
+<input id="whatsapp" type="tel" required maxlength="20"
+placeholder="DDD + número">
+
+<label for="cidade">Cidade</label>
+<input id="cidade" type="text" required maxlength="100"
+placeholder="Sua cidade">
+
+<label for="email">E-mail</label>
+<input id="email" type="email" required autocomplete="email"
+placeholder="seu@email.com">
+
+<label for="senha">Senha</label>
+<input id="senha" type="password" required minlength="6"
+autocomplete="new-password"
+placeholder="Mínimo de 6 caracteres">
+
+<button id="botaoCadastrar" type="submit">
+Criar minha conta
+</button>
+
+</form>
+
+<div id="mensagem"></div>
+
+<a class="link" href="index.html">Voltar para o login</a>
+
+</div>
+</div>
+
+<footer>PalcoGyn — Descubra novos talentos.</footer>
+
+<script>
+const SUPABASE_URL = "https://nocwkiobwjpuygsbnyhn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_L0JjrfD0Zia0zjQ8opWnXA_Qzxwgp-p";
+
+const db = window.supabase.createClient(
+ SUPABASE_URL,
+ SUPABASE_KEY
+);
+
+const formulario = document.getElementById("formCadastro");
+const mensagem = document.getElementById("mensagem");
+const botao = document.getElementById("botaoCadastrar");
+
+formulario.addEventListener("submit",async function(event){
+
+ event.preventDefault();
+
+ mensagem.textContent="Criando sua conta...";
+ botao.disabled=true;
+
+ const nome=document.getElementById("nome").value.trim();
+ const estabelecimento=document.getElementById("estabelecimento").value.trim();
+ const categoria=document.getElementById("categoria").value;
+ const whatsapp=document.getElementById("whatsapp").value.trim();
+ const cidade=document.getElementById("cidade").value.trim();
+ const email=document.getElementById("email").value.trim();
+ const senha=document.getElementById("senha").value;
+
+ try{
+
+  const {data,error}=await db.auth.signUp({
+   email:email,
+   password:senha,
+   options:{
+    emailRedirectTo:"https://felipekardozzo.github.io/palcogyn/",
+    data:{
+     nome:nome,
+     tipo:"contratante",
+     whatsapp:whatsapp,
+     cidade:cidade,
+     estabelecimento:estabelecimento,
+     categoria_contratante:categoria
+    }
+   }
+  });
+
+  if(error) throw error;
+
+  if(data.user && !data.session){
+
+   mensagem.textContent=
+    "Cadastro realizado com sucesso!\n"+
+    "Verifique seu e-mail para confirmar a conta antes de entrar.";
+
+  }else{
+
+   mensagem.textContent=
+    "Conta criada com sucesso! Você já pode entrar no PalcoGyn.";
+
+  }
+
+  formulario.reset();
+
+ }catch(error){
+
+  mensagem.textContent="Não foi possível criar a conta: "+error.message;
+
+ }finally{
+
+  botao.disabled=false;
+
+ }
+
+});
+</script>
+
+</body>
+</html>
