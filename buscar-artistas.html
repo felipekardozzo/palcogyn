@@ -1,0 +1,374 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buscar Artistas | PalcoGyn</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:#080e22;
+ color:#fff;
+ font-family:Arial,sans-serif;
+}
+header{
+ padding:20px;
+ background:#101a35;
+ border-bottom:1px solid #263653;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ flex-wrap:wrap;
+ gap:12px;
+}
+.logo{font-size:23px;font-weight:bold;color:#65b7ff}
+header a{color:#fff;text-decoration:none}
+main{max-width:1100px;margin:auto;padding:25px 18px}
+h1{margin:0 0 8px}
+.subtitulo{color:#aebbd0;margin-bottom:25px}
+.filtros{
+ background:#111d38;
+ border:1px solid #293c55;
+ border-radius:14px;
+ padding:20px;
+ margin-bottom:25px;
+}
+.filtros h2{margin-top:0;font-size:19px}
+.grid{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+ gap:14px;
+}
+label{display:block;font-size:13px;color:#b9c9df;margin-bottom:7px}
+input,select{
+ width:100%;
+ padding:12px;
+ border-radius:8px;
+ border:1px solid #344967;
+ background:#081329;
+ color:white;
+ outline:none;
+}
+button{
+ border:0;
+ border-radius:8px;
+ padding:12px 18px;
+ background:#1687e8;
+ color:white;
+ font-weight:bold;
+ cursor:pointer;
+}
+.acoes{display:flex;gap:10px;margin-top:17px;flex-wrap:wrap}
+.btn-limpar{background:#34445e}
+#mensagem{color:#aebbd0;margin:18px 0}
+.resultados{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+ gap:18px;
+}
+.artista{
+ background:#111d38;
+ border:1px solid #293c55;
+ border-radius:14px;
+ overflow:hidden;
+}
+.foto{
+ width:100%;
+ height:190px;
+ object-fit:cover;
+ background:#1b2b49;
+}
+.conteudo{padding:17px}
+.conteudo h3{margin:0 0 8px;font-size:20px}
+.info{color:#b9c9df;font-size:14px;line-height:1.7}
+.cache{color:#65b7ff;font-size:18px;font-weight:bold;margin-top:12px}
+.video{width:100%;margin-top:12px;border-radius:8px}
+.perfil{
+ display:inline-block;
+ margin-top:14px;
+ color:#65b7ff;
+ text-decoration:none;
+ font-weight:bold;
+}
+@media(max-width:500px){
+ header{align-items:flex-start}
+ main{padding:20px 13px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+ <div class="logo">PalcoGyn</div>
+ <a href="contractor-dashboard.html">← Voltar ao painel</a>
+</header>
+
+<main>
+ <h1>Encontre seu artista</h1>
+ <p class="subtitulo">Descubra talentos e encontre a atração ideal para seu evento.</p>
+
+ <section class="filtros">
+  <h2>Filtros de busca</h2>
+
+  <div class="grid">
+   <div>
+    <label for="nome">Nome do artista</label>
+    <input id="nome" placeholder="Digite o nome">
+   </div>
+
+   <div>
+    <label for="categoria">Categoria</label>
+    <select id="categoria">
+     <option value="">Todas as categorias</option>
+     <option value="cantor">Cantor</option>
+     <option value="banda">Banda</option>
+     <option value="musico">Músico</option>
+     <option value="dj">DJ</option>
+    </select>
+   </div>
+
+   <div>
+    <label for="estilo">Estilo musical</label>
+    <input id="estilo" placeholder="Ex.: Sertanejo, Pagode">
+   </div>
+
+   <div>
+    <label for="local">Cidade, região ou estado</label>
+    <input id="local" placeholder="Ex.: Goiânia, GO">
+   </div>
+
+   <div>
+    <label for="valorMin">Cachê mínimo (R$)</label>
+    <input id="valorMin" type="number" min="0" step="0.01" placeholder="Valor mínimo">
+   </div>
+
+   <div>
+    <label for="valorMax">Cachê máximo (R$)</label>
+    <input id="valorMax" type="number" min="0" step="0.01" placeholder="Valor máximo">
+   </div>
+  </div>
+
+  <div class="acoes">
+   <button onclick="buscarArtistas()">Buscar artistas</button>
+   <button class="btn-limpar" onclick="limparFiltros()">Limpar filtros</button>
+  </div>
+ </section>
+
+ <div id="mensagem">Carregando artistas...</div>
+ <section id="resultados" class="resultados"></section>
+</main>
+
+<script>
+const SUPABASE_URL = "https://nocwkiobwjpuygsbnyhn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_L0JjrfD0Zia0zjQ8opWnXA_Qzxwgp-p";
+const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+let artistasCarregados = [];
+
+async function verificarContratante(){
+ const {data:{session},error} = await db.auth.getSession();
+
+ if(error || !session){
+  window.location.href="index.html";
+  return false;
+ }
+
+ const {data:perfil,error:erroPerfil} = await db
+  .from("profiles")
+  .select("tipo")
+  .eq("id",session.user.id)
+  .maybeSingle();
+
+ if(erroPerfil || !perfil || perfil.tipo !== "contratante"){
+  alert("Acesso permitido somente para contratantes.");
+  window.location.href="index.html";
+  return false;
+ }
+
+ return true;
+}
+
+async function carregarArtistas(){
+ const {data,error} = await db
+  .from("artist_profiles")
+  .select("id_palcogyn,user_id,artist_name,artist_type,performance_type,music_styles,city,state,performance_fee,bio,presentation_video_url");
+
+ if(error){
+  document.getElementById("mensagem").textContent =
+   "Não foi possível carregar os artistas. Verifique as permissões de acesso.";
+  console.error(error);
+  return;
+ }
+
+ artistasCarregados = data || [];
+ buscarArtistas();
+}
+
+function normalizar(valor){
+ return String(valor || "").normalize("NFD")
+  .replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+}
+
+async function buscarArtistas(){
+ const nome = normalizar(document.getElementById("nome").value);
+ const categoria = normalizar(document.getElementById("categoria").value);
+ const estilo = normalizar(document.getElementById("estilo").value);
+ const local = normalizar(document.getElementById("local").value);
+
+ const minTexto = document.getElementById("valorMin").value;
+ const maxTexto = document.getElementById("valorMax").value;
+ const minimo = minTexto === "" ? null : Number(minTexto);
+ const maximo = maxTexto === "" ? null : Number(maxTexto);
+
+ if(minimo !== null && maximo !== null && minimo > maximo){
+  document.getElementById("mensagem").textContent =
+   "O cachê mínimo não pode ser maior que o máximo.";
+  return;
+ }
+
+ const filtrados = artistasCarregados.filter(a=>{
+  const nomeArtista = normalizar(a.artist_name);
+  const tipo = normalizar(a.artist_type);
+  const estilos = normalizar(Array.isArray(a.music_styles)
+   ? a.music_styles.join(" ")
+   : a.music_styles);
+  const cidadeEstado = normalizar((a.city || "")+" "+(a.state || ""));
+
+  const cache = a.performance_fee === null ||
+   a.performance_fee === undefined ? null : Number(a.performance_fee);
+
+  if(nome && !nomeArtista.includes(nome)) return false;
+  if(categoria && tipo !== categoria) return false;
+  if(estilo && !estilos.includes(estilo)) return false;
+  if(local && !cidadeEstado.includes(local)) return false;
+
+  if(minimo !== null && (cache === null || cache < minimo)) return false;
+  if(maximo !== null && (cache === null || cache > maximo)) return false;
+
+  return true;
+ });
+
+ mostrarResultados(filtrados);
+}
+
+async function mostrarResultados(lista){
+ const area = document.getElementById("resultados");
+ const mensagem = document.getElementById("mensagem");
+
+ area.innerHTML = "";
+
+ if(!lista.length){
+  mensagem.textContent = "Nenhum artista encontrado com esses filtros.";
+  return;
+ }
+
+ mensagem.textContent = lista.length + " artista(s) encontrado(s).";
+
+ const ids = lista.map(a=>a.user_id).filter(Boolean);
+
+ const {data:perfis,error} = await db
+  .from("profiles")
+  .select("id,foto_url")
+  .in("id",ids);
+
+ if(error) console.error("Erro ao carregar fotos:",error);
+
+ const fotos = {};
+ (perfis || []).forEach(p=>{
+  fotos[p.id] = p.foto_url;
+ });
+
+ for(const artista of lista){
+  const fotoPath = fotos[artista.user_id];
+  let fotoUrl = "";
+
+  if(fotoPath){
+   const {data:fotoAssinada} = await db.storage
+    .from("artist-media")
+    .createSignedUrl(fotoPath,3600);
+
+   fotoUrl = fotoAssinada?.signedUrl || "";
+  }
+
+  const card = document.createElement("article");
+  card.className = "artista";
+
+  const imagem = document.createElement("img");
+  imagem.className = "foto";
+  imagem.alt = "Foto do artista";
+  imagem.src = fotoUrl || "https://placehold.co/600x400/14213d/ffffff?text=PalcoGyn";
+
+  const conteudo = document.createElement("div");
+  conteudo.className = "conteudo";
+
+  const titulo = document.createElement("h3");
+  titulo.textContent = artista.artist_name || "Artista";
+
+  const info = document.createElement("div");
+  info.className = "info";
+
+  const estilos = Array.isArray(artista.music_styles)
+   ? artista.music_styles.join(", ")
+   : (artista.music_styles || "Não informado");
+
+  info.textContent =
+   (artista.artist_type || "Categoria não informada") +
+   (artista.performance_type ? " • "+artista.performance_type : "") +
+   " | " + estilos +
+   " | " + [artista.city,artista.state].filter(Boolean).join(" - ");
+
+  const cache = document.createElement("div");
+  cache.className = "cache";
+  cache.textContent = artista.performance_fee !== null &&
+   artista.performance_fee !== undefined
+   ? "Cachê: R$ "+Number(artista.performance_fee).toLocaleString("pt-BR",{minimumFractionDigits:2})
+   : "Cachê sob consulta";
+
+  conteudo.append(titulo,info,cache);
+
+  if(artista.presentation_video_url){
+   const video = document.createElement("video");
+   video.className = "video";
+   video.controls = true;
+   video.preload = "metadata";
+
+   const {data:videoAssinado} = await db.storage
+    .from("artist-media")
+    .createSignedUrl(artista.presentation_video_url,3600);
+
+   if(videoAssinado?.signedUrl){
+    video.src = videoAssinado.signedUrl;
+    conteudo.appendChild(video);
+   }
+  }
+
+  card.append(imagem,conteudo);
+  area.appendChild(card);
+ }
+}
+
+function limparFiltros(){
+ document.getElementById("nome").value="";
+ document.getElementById("categoria").value="";
+ document.getElementById("estilo").value="";
+ document.getElementById("local").value="";
+ document.getElementById("valorMin").value="";
+ document.getElementById("valorMax").value="";
+ buscarArtistas();
+}
+
+async function iniciar(){
+ const autorizado = await verificarContratante();
+ if(autorizado) await carregarArtistas();
+}
+
+iniciar();
+</script>
+
+</body>
+</html>
