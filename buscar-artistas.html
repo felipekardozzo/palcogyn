@@ -215,6 +215,10 @@ async function carregarArtistas(){
  }
 
  artistasCarregados = data || [];
+ console.log("Resposta da consulta de artistas:", {
+  data: data,
+  error: error
+});
  alert("Artistas carregados: " + artistasCarregados.length);
  buscarArtistas();
 }
