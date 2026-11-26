@@ -200,13 +200,10 @@ async function loadUser(user) {
   }
 
   // CONTRATANTE
-  if (data.tipo === "contratante") {
-    document.getElementById("access").classList.add("hidden");
-    document.getElementById("welcome").classList.remove("hidden");
-    document.getElementById("userInfo").textContent =
-      "Olá, " + data.nome + "! Acesso: Contratante.";
-    return;
-  }
+if (data.tipo === "contratante") {
+  window.location.href = "contractor-dashboard.html";
+  return;
+}
 }
 
 document.getElementById("signupForm").addEventListener("submit", async function(e) {
