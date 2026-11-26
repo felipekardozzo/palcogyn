@@ -301,13 +301,7 @@ async function mostrarResultados(lista){
   .from("profiles")
   .select("id,foto_url")
   .in("id",ids);
-
-const {data:perfis,error} = await db
-  .from("profiles")
-  .select("id,foto_url")
-  .in("id",ids);
-
- if(error) console.error("Erro ao carregar fotos:",error);
+ 
  if(error) console.error("Erro ao carregar fotos:",error);
 
  const fotos = {};
