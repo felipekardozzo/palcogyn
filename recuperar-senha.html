@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recuperar Senha | PalcoGyn</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:#080e22;
+ color:white;
+ font-family:Arial,sans-serif;
+}
+header{
+ padding:22px;
+ text-align:center;
+ border-bottom:1px solid #263052;
+}
+.logo{font-size:30px;font-weight:bold}
+.logo span{color:#8b5cf6}
+header p{color:#a5b4dc;font-size:11px;letter-spacing:2px}
+main{max-width:440px;margin:45px auto;padding:20px}
+.card{
+ background:#121c38;
+ border:1px solid #34416a;
+ border-radius:18px;
+ padding:28px;
+}
+h1{text-align:center;font-size:25px}
+p{color:#b8c1dc;line-height:1.6;text-align:center}
+label{display:block;margin:20px 0 7px;color:#dce4ff}
+input{
+ width:100%;
+ padding:14px;
+ border-radius:8px;
+ border:1px solid #465477;
+ background:#080e22;
+ color:white;
+ font-size:15px;
+}
+button,.link{
+ display:block;
+ width:100%;
+ padding:14px;
+ margin-top:20px;
+ border:0;
+ border-radius:8px;
+ background:linear-gradient(90deg,#7045e8,#2786ed);
+ color:white;
+ font-weight:bold;
+ text-align:center;
+ text-decoration:none;
+ cursor:pointer;
+}
+button:disabled{opacity:.6;cursor:not-allowed}
+#message{
+ margin-top:18px;
+ line-height:1.5;
+ text-align:center;
+ color:#a5b4dc;
+}
+footer{text-align:center;color:#8995b8;padding:25px;font-size:13px}
+</style>
+</head>
+
+<body>
+
+<header>
+ <div class="logo">PALCO<span>GYN</span></div>
+ <p>TALENTOS • EVENTOS • CONEXÕES</p>
+</header>
+
+<main>
+ <section class="card">
+
+  <h1>Recuperar senha</h1>
+
+  <p>
+   Informe seu e-mail cadastrado.
+   Enviaremos um link para você criar uma nova senha.
+  </p>
+
+  <form id="formRecuperacao">
+
+   <label for="email">E-mail cadastrado</label>
+
+   <input
+    id="email"
+    type="email"
+    required
+    autocomplete="email"
+    placeholder="seu@email.com">
+
+   <button id="botaoEnviar" type="submit">
+    Enviar link de recuperação
+   </button>
+
+  </form>
+
+  <div id="message" role="status"></div>
+
+  <a class="link" href="index.html">
+   Voltar para o login
+  </a>
+
+ </section>
+</main>
+
+<footer>PALCOGYN © 2026 — Descubra novos talentos.</footer>
+
+<script>
+const SUPABASE_URL = "https://nocwkiobwjpuygsbnyhn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_L0JjrfD0Zia0zjQ8opWnXA_Qzxwgp-p";
+
+const db = window.supabase.createClient(
+ SUPABASE_URL,
+ SUPABASE_KEY
+);
+
+const formulario=document.getElementById("formRecuperacao");
+const mensagem=document.getElementById("message");
+const botao=document.getElementById("botaoEnviar");
+
+formulario.addEventListener("submit",async function(e){
+
+ e.preventDefault();
+
+ const email=document.getElementById("email").value.trim();
+
+ mensagem.textContent="Enviando solicitação...";
+ botao.disabled=true;
+
+ try{
+
+  const {error}=await db.auth.resetPasswordForEmail(email,{
+   redirectTo:"https://felipekardozzo.github.io/palcogyn/redefinir-senha.html"
+  });
+
+  if(error) throw error;
+
+  mensagem.textContent=
+   "Se o e-mail estiver cadastrado, você receberá as instruções de recuperação. Confira também o Spam.";
+
+ }catch(error){
+
+  mensagem.textContent=
+   "Não foi possível enviar a solicitação: "+error.message;
+
+ }finally{
+
+  botao.disabled=false;
+
+ }
+
+});
+</script>
+
+</body>
+</html>
