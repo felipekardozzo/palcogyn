@@ -96,6 +96,19 @@ footer{text-align:center;color:#8995b8;padding:25px;font-size:13px}
 <footer>PALCOGYN © 2026 — Descubra novos talentos.</footer>
 
 <script>
+  function togglePassword(id,botao){
+
+ const campo=document.getElementById(id);
+
+ if(campo.type==="password"){
+  campo.type="text";
+  botao.textContent="Ocultar senha";
+ }else{
+  campo.type="password";
+  botao.textContent="Mostrar senha";
+ }
+
+}
 const SUPABASE_URL = "https://nocwkiobwjpuygsbnyhn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_L0JjrfD0Zia0zjQ8opWnXA_Qzxwgp-p";
 
