@@ -299,10 +299,8 @@ async function mostrarResultados(lista){
 
  const {data:perfis,error} = await db
   .from("profiles")
-  const teste = await db
-  .from("artist_profiles")
-  .select("*")
-  .eq("id_palcogyn", 67176);
+  .select("id,foto_url")
+  .in("id",ids);
 
 console.log("TESTE PELO ID:", teste);
   .select("id,foto_url")
