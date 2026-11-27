@@ -116,7 +116,37 @@ button{
   <h2>Filtros de busca</h2>
 
   <div class="grid">
-   <div>
+  <div>
+    <label for="categoria">Categoria</label>
+    <select id="categoria">
+      <option value="">Todas as categorias</option>
+      <option value="Cantor(a)">Cantor(a)</option>
+      <option value="Banda">Banda</option>
+      <option value="DJ">DJ</option>
+      <option value="Dupla">Dupla</option>
+      <option value="Grupo">Grupo</option>
+      <option value="Instrumentista">Instrumentista</option>
+      <option value="Locutor(a)">Locutor(a)</option>
+      <option value="Leiloeiro(a)">Leiloeiro(a)</option>
+      <option value="Palestrante">Palestrante</option>
+      <option value="Dançarino(a)">Dançarino(a)</option>
+      <option value="Humorista de Stand-Up">Humorista de Stand-Up</option>
+      <option value="Puxador de Quadrilha">Puxador(a) de Quadrilha</option>
+      <option value="Coreografo(a)">Coreografo(a)</option>
+    </select>
+  </div>
+
+  <div>
+    <label for="valorMin">Cachê mínimo (R$)</label>
+    <input
+      id="valorMin"
+      type="number"
+      min="0"
+      step="0.01"
+      placeholder="Valor mínimo"
+    >
+  </div>
+</div>
     <label for="nome">Nome do artista</label>
     <input id="nome" placeholder="Digite o nome">
    </div>
