@@ -500,6 +500,7 @@ async function enviarSolicitacaoContratacao(){
     .from("contratacoes")
     .insert({
       contratante_id: contratanteLogado,
+      orcamento_maximo: orcamentoBuscaAplicado,
       artista_id: artistaSelecionado.user_id,
       data_evento: dataEvento,
       horario_evento: horarioEvento || null,
