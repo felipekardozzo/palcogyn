@@ -463,6 +463,60 @@ function limparFiltros(){
   buscarArtistas();
 }
 
+async function enviarSolicitacaoContratacao(){
+
+  if(!artistaSelecionado || !contratanteLogado){
+    alert("Não foi possível identificar o contratante ou o artista.");
+    return;
+  }
+
+  const dataEvento = document.getElementById("dataEvento").value;
+  const horarioEvento = document.getElementById("horarioEvento").value;
+  const localEvento = document.getElementById("localEvento").value.trim();
+  const tipoEvento = document.getElementById("tipoEvento").value.trim();
+  const cacheProposto = Number(document.getElementById("cacheProposto").value);
+  const descricaoEvento = document.getElementById("descricaoEvento").value.trim();
+
+  if(!dataEvento || !localEvento || !cacheProposto ||
+     !Number.isFinite(cacheProposto) || cacheProposto < 0){
+    alert("Preencha a data, o local e um valor de proposta válido.");
+    return;
+  }
+
+  const hoje = new Date();
+  hoje.setHours(0,0,0,0);
+
+  if(new Date(dataEvento + "T00:00:00") < hoje){
+    alert("A data do evento não pode ser anterior a hoje.");
+    return;
+  }
+
+  const {data,error} = await db
+    .from("contratacoes")
+    .insert({
+      contratante_id: contratanteLogado,
+      artista_id: artistaSelecionado.user_id,
+      data_evento: dataEvento,
+      horario_evento: horarioEvento || null,
+      local_evento: localEvento,
+      tipo_evento: tipoEvento || null,
+      descricao_evento: descricaoEvento || null,
+      cache_proposto: cacheProposto
+    })
+    .select()
+    .single();
+
+  if(error){
+    console.error("Erro ao registrar contratação:",error);
+    alert("Não foi possível enviar a solicitação. Tente novamente.");
+    return;
+  }
+
+  alert("Solicitação registrada com sucesso!");
+
+  fecharFormularioContratacao();
+}
+
 async function iniciar(){
  const autorizado = await verificarContratante();
  if(autorizado) await carregarArtistas();
