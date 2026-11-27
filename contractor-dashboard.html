@@ -294,7 +294,7 @@ async function carregarPainel(){
 
  document.getElementById("saudacao").textContent=
   "Olá, "+(perfil.nome || "Contratante")+"!";
-
+carregarContratacoes(session.user.id);
 }
 async function carregarContratacoes(contratanteId){
 
