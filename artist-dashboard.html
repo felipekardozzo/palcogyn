@@ -357,7 +357,7 @@ async function iniciar(){
    conteudo.innerHTML=
     '<p class="info">Seu perfil artístico ainda não foi preenchido.</p>'+
     '<a class="link" href="artist-register.html">Completar meu cadastro artístico</a>'+
-    '<button class="secondary" id="sair">Sair da conta</button>';
+    '<button class="secondary" id="sair">da conta</button>';
 
   }else{
 
@@ -678,9 +678,13 @@ function atualizarContadores(){
       String(segundos).padStart(2,"0");
   });
 }
+await carregarPortfolio();
+await carregarSolicitacoes();
 
 setInterval(atualizarContadores, 1000);
 atualizarContadores();
+
+  // SAIR DA CONTA
 
   // SAIR DA CONTA
 
