@@ -223,6 +223,8 @@ let orcamentoBuscaAplicado = null;
 
 function abrirFormularioContratacao(artista){
   artistaSelecionado = artista;
+ document.getElementById("cacheProposto").value =
+  artista.performance_fee || "";
 
   document.getElementById("nomeArtistaContratacao").textContent =
     "Artista selecionado: " + artista.artist_name;
