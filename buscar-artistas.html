@@ -482,8 +482,8 @@ async function enviarSolicitacaoContratacao(){
   const cacheProposto = Number(document.getElementById("cacheProposto").value);
   const descricaoEvento = document.getElementById("descricaoEvento").value.trim();
 
-  if(!dataEvento || !localEvento || !cacheProposto ||
-     !Number.isFinite(cacheProposto) || cacheProposto < 0){
+  if(!dataEvento || !localEvento ||
+   !Number.isFinite(cacheProposto) || cacheProposto <= 0){
     alert("Preencha a data, o local e um valor de proposta válido.");
     return;
   }
