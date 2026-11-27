@@ -209,10 +209,7 @@ async function carregarArtistas(){
  const {data,error} = await db
   .from("artist_profiles")
 .select("*");
- console.log("TESTE DE CONEXÃO:", await db
-  .from("artist_profiles")
-  .select("*", { count: "exact" })
-);
+
  if(error){
   document.getElementById("mensagem").textContent =
    "Não foi possível carregar os artistas. Verifique as permissões de acesso.";
@@ -226,11 +223,6 @@ async function carregarArtistas(){
   .select("*")
   .eq("id_palcogyn", "67176");
 
-console.log("TESTE PELO ID:", teste);
- console.log("Resposta da consulta de artistas:", {
-  data: data,
-  error: error
-});
  alert("Artistas carregados: " + artistasCarregados.length);
  buscarArtistas();
 }
