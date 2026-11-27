@@ -606,8 +606,42 @@ async function iniciar(){
     }
 
    }
+async function carregarSolicitacoes(){
 
+  const lista = document.getElementById("listaContratacoes");
+
+  lista.innerHTML = '<p class="info">Carregando solicitações...</p>';
+
+  const {data:solicitacoes,error} = await db
+    .from("contratacoes")
+    .select("id,data_evento,horario_evento,local_evento,tipo_evento,descricao_evento,cache_proposto,cache_contraproposta,status,criada_em,prazo_resposta")
+    .eq("artista_id",user.id)
+    .order("criada_em",{ascending:false});
+
+  if(error){
+    console.error("Erro ao carregar solicitações:",error);
+    lista.innerHTML = '<p class="info">Não foi possível carregar as solicitações.</p>';
+    return;
+  }
+
+  if(!solicitacoes || solicitacoes.length === 0){
+    lista.innerHTML = '<p class="info">Você ainda não recebeu solicitações de contratação.</p>';
+    return;
+  }
+
+  lista.innerHTML = solicitacoes.map(item => `
+    <div class="detail" style="margin-bottom:15px;">
+      <strong>Evento: ${escapar(item.tipo_evento || "Não informado")}</strong>
+      <p class="info">Data: ${escapar(item.data_evento)}</p>
+      <p class="info">Horário: ${escapar(item.horario_evento || "Não informado")}</p>
+      <p class="info">Local: ${escapar(item.local_evento)}</p>
+      <p class="info">Proposta: R$ ${Number(item.cache_proposto).toLocaleString("pt-BR",{minimumFractionDigits:2})}</p>
+      <p class="info">Situação: ${escapar(item.status)}</p>
+    </div>
+  `).join("");
+}
    await carregarPortfolio();
+   await carregarSolicitacoes();
 
   }
 
