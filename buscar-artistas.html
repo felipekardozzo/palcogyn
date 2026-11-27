@@ -298,7 +298,7 @@ async function buscarArtistas(){
   const minimo = minTexto === "" ? null : Number(minTexto);
   orcamentoBuscaAplicado = minimo;
 
-  if(minimo !== null && (!Number.ite(minimo) || minimo < 0)){
+  if(minimo !== null && (!Number.isFinite(minimo) || minimo < 0)){
     document.getElementById("mensagem").textContent =
    "Informe um orçamento máximo válido."
     return;
