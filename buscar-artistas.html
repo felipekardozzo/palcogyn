@@ -439,7 +439,17 @@ async function mostrarResultados(lista){
    }
   }
 
-  card.append(imagem,conteudo);
+  const botaoContratar = document.createElement("button");
+botaoContratar.type = "button";
+botaoContratar.textContent = "Solicitar Contratação";
+
+botaoContratar.addEventListener("click",()=>{
+  abrirFormularioContratacao(artista);
+});
+
+conteudo.appendChild(botaoContratar);
+
+card.append(imagem,conteudo);
   area.appendChild(card);
  }
 }
