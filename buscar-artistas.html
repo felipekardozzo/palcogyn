@@ -236,8 +236,7 @@ async function verificarContratante(){
  if(error || !session){
   window.location.href="index.html";
   return false;
- }
-
+}
  const {data:perfil,error:erroPerfil} = await db
   .from("profiles")
   .select("tipo")
