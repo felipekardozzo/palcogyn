@@ -214,7 +214,22 @@ const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 console.log("Chave pública carregada:", !!SUPABASE_KEY);
 
 let artistasCarregados = [];
+let artistaSelecionado = null;
+let contratanteLogado = null;
 
+function abrirFormularioContratacao(artista){
+  artistaSelecionado = artista;
+
+  document.getElementById("nomeArtistaContratacao").textContent =
+    "Artista selecionado: " + artista.artist_name;
+
+  document.getElementById("modalContratacao").style.display = "flex";
+}
+
+function fecharFormularioContratacao(){
+  document.getElementById("modalContratacao").style.display = "none";
+  artistaSelecionado = null;
+}
 async function verificarContratante(){
  const {data:{session},error} = await db.auth.getSession();
 
