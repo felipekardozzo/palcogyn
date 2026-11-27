@@ -510,11 +510,17 @@ if(orcamentoBuscaAplicado !== null &&
     return;
   }
 
-  const { data: sessaoAtual } = await db.auth.getSession();
+  const {data:{user},error:erroUsuario} = await db.auth.getUser();
 
-console.log("ID da sessão:", sessaoAtual.session?.user?.id);
+if(erroUsuario || !user){
+  alert("Sua sessão expirou. Entre novamente.");
+  return;
+}
+
+contratanteLogado = user.id;
+
+console.log("ID autenticado:", user.id);
 console.log("ID do contratante:", contratanteLogado);
-
 const {data,error} = await db
   .from("contratacoes")
     .insert({
