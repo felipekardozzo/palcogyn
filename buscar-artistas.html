@@ -261,22 +261,58 @@ function normalizar(valor){
   .replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
 }
 
+
 async function buscarArtistas(){
- const nome = normalizar(document.getElementById("nome").value);
- const categoria = normalizar(document.getElementById("categoria").value);
- const estilo = normalizar(document.getElementById("estilo").value);
- const local = normalizar(document.getElementById("local").value);
+  const categoria = normalizar(
+    document.getElementById("categoria").value
+  );
 
- const minTexto = document.getElementById("valorMin").value;
- const maxTexto = document.getElementById("valorMax").value;
- const minimo = minTexto === "" ? null : Number(minTexto);
- const maximo = maxTexto === "" ? null : Number(maxTexto);
+  const minTexto = document.getElementById("valorMin").value.trim();
 
- if(minimo !== null && maximo !== null && minimo > maximo){
-  document.getElementById("mensagem").textContent =
-   "O cachê mínimo não pode ser maior que o máximo.";
-  return;
- }
+  const minimo = minTexto === "" ? null : Number(minTexto);
+
+  if(minimo !== null && (!Number.isFinite(minimo) || minimo < 0)){
+    document.getElementById("mensagem").textContent =
+      "Informe um cachê mínimo válido.";
+    return;
+  }
+
+  const filtrados = artistasCarregados.filter(a=>{
+    const tipo = normalizar(a.artist_type);
+
+    const cache = a.performance_fee === null ||
+      a.performance_fee === undefined
+      ? null
+      : Number(a.performance_fee);
+
+    if(categoria && tipo !== categoria) return false;
+
+    if(minimo !== null && (cache === null || cache < minimo)){
+      return false;
+    }
+
+    return true;
+  });
+
+  filtrados.sort((a,b)=>{
+    const cacheA = a.performance_fee === null ||
+      a.performance_fee === undefined
+      ? null
+      : Number(a.performance_fee);
+
+    const cacheB = b.performance_fee === null ||
+      b.performance_fee === undefined
+      ? null
+      : Number(b.performance_fee);
+
+    if(cacheA === null) return 1;
+    if(cacheB === null) return -1;
+
+    return cacheA - cacheB;
+  });
+
+  mostrarResultados(filtrados);
+}
 
  const filtrados = artistasCarregados.filter(a=>{
   const nomeArtista = normalizar(a.artist_name);
