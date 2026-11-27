@@ -294,6 +294,7 @@ async function buscarArtistas(){
 
   const minTexto = document.getElementById("valorMin").value.trim();
   const minimo = minTexto === "" ? null : Number(minTexto);
+  orcamentoBuscaAplicado = minimo;
 
   if(minimo !== null && (!Number.isFinite(minimo) || minimo < 0)){
     document.getElementById("mensagem").textContent =
