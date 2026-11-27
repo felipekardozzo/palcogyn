@@ -652,6 +652,29 @@ async function carregarSolicitacoes(){
 ` : ""}
     </div>
   `).join("");
+ function atualizarContadores(){
+
+  document.querySelectorAll(".contador-prazo").forEach(el => {
+
+    const prazo = new Date(el.dataset.prazo).getTime();
+    const restante = prazo - Date.now();
+
+    if(restante <= 0){
+      el.textContent = "Prazo encerrado — aguardando atualização";
+      return;
+    }
+
+    const horas = Math.floor(restante / 3600000);
+    const minutos = Math.floor((restante % 3600000) / 60000);
+    const segundos = Math.floor((restante % 60000) / 1000);
+
+    el.textContent =
+      "Tempo para responder: " +
+      String(horas).padStart(2,"0") + ":" +
+      String(minutos).padStart(2,"0") + ":" +
+      String(segundos).padStart(2,"0");
+  });
+}
 }
    await carregarPortfolio();
    await carregarSolicitacoes();
