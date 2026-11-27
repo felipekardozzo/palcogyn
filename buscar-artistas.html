@@ -230,30 +230,47 @@ function normalizar(valor){
 }
 
 
+
 async function buscarArtistas(){
-  const categoria = normalizar(
-    document.getElementById("categoria").value
-  );
+
+  const nome = normalizar(document.getElementById("nome").value);
+  const categoria = normalizar(document.getElementById("categoria").value);
+  const estilo = normalizar(document.getElementById("estilo").value);
+  const local = normalizar(document.getElementById("local").value);
 
   const minTexto = document.getElementById("valorMin").value.trim();
-
   const minimo = minTexto === "" ? null : Number(minTexto);
 
   if(minimo !== null && (!Number.isFinite(minimo) || minimo < 0)){
     document.getElementById("mensagem").textContent =
-      "Informe um cachê mínimo válido.";
+      "Informe um cachê proposta válido.";
     return;
   }
 
   const filtrados = artistasCarregados.filter(a=>{
+
+    const nomeArtista = normalizar(a.artist_name);
     const tipo = normalizar(a.artist_type);
+
+    const estilos = normalizar(
+      Array.isArray(a.music_styles)
+        ? a.music_styles.join(" ")
+        : a.music_styles
+    );
+
+    const cidadeEstado = normalizar(
+      (a.city || "") + " " + (a.state || "")
+    );
 
     const cache = a.performance_fee === null ||
       a.performance_fee === undefined
       ? null
       : Number(a.performance_fee);
 
+    if(nome && !nomeArtista.includes(nome)) return false;
     if(categoria && tipo !== categoria) return false;
+    if(estilo && !estilos.includes(estilo)) return false;
+    if(local && !cidadeEstado.includes(local)) return false;
 
     if(minimo !== null && (cache === null || cache < minimo)){
       return false;
@@ -263,15 +280,14 @@ async function buscarArtistas(){
   });
 
   filtrados.sort((a,b)=>{
+
     const cacheA = a.performance_fee === null ||
       a.performance_fee === undefined
-      ? null
-      : Number(a.performance_fee);
+      ? null : Number(a.performance_fee);
 
     const cacheB = b.performance_fee === null ||
       b.performance_fee === undefined
-      ? null
-      : Number(b.performance_fee);
+      ? null : Number(b.performance_fee);
 
     if(cacheA === null) return 1;
     if(cacheB === null) return -1;
@@ -280,31 +296,6 @@ async function buscarArtistas(){
   });
 
   mostrarResultados(filtrados);
-}
-
- const filtrados = artistasCarregados.filter(a=>{
-  const nomeArtista = normalizar(a.artist_name);
-  const tipo = normalizar(a.artist_type);
-  const estilos = normalizar(Array.isArray(a.music_styles)
-   ? a.music_styles.join(" ")
-   : a.music_styles);
-  const cidadeEstado = normalizar((a.city || "")+" "+(a.state || ""));
-
-  const cache = a.performance_fee === null ||
-   a.performance_fee === undefined ? null : Number(a.performance_fee);
-
-  if(nome && !nomeArtista.includes(nome)) return false;
-  if(categoria && tipo !== categoria) return false;
-  if(estilo && !estilos.includes(estilo)) return false;
-  if(local && !cidadeEstado.includes(local)) return false;
-
-  if(minimo !== null && (cache === null || cache < minimo)) return false;
-  if(maximo !== null && (cache === null || cache > maximo)) return false;
-
-  return true;
- });
-
- mostrarResultados(filtrados);
 }
 
 async function mostrarResultados(lista){
