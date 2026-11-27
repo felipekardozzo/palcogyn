@@ -649,6 +649,18 @@ async function carregarSolicitacoes(){
     style="margin-top:10px;background:#16a34a;">
     Aceitar proposta
   </button>
+
+  <button
+    onclick="enviarContraproposta('${item.id}')"
+    style="margin-top:10px;background:#2563eb;">
+    Fazer contraproposta
+  </button>
+
+  <button
+    onclick="recusarProposta('${item.id}')"
+    style="margin-top:10px;background:#dc2626;">
+    Recusar proposta
+  </button>
 ` : ""}
     </div>
     `).join("");
