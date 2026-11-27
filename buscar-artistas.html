@@ -543,8 +543,12 @@ const {data,error} = await db
     return;
   }
 
-  alert("Solicitação registrada com sucesso!");
-
+  alert(
+  "Solicitação enviada com sucesso!\n\n" +
+  "Sua proposta foi encaminhada ao artista escolhido.\n\n" +
+  "Agora é só aguardar! Assim que o artista responder, você receberá uma notificação pelo PalcoGyn.\n\n" +
+  "Estamos na torcida para que essa contratação seja o início de um grande evento!"
+);
   fecharFormularioContratacao();
 }
 
