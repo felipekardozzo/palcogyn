@@ -260,10 +260,6 @@ async function verificarContratante(){
 }
 
 async function carregarArtistas(){
-const { data: sessaoAtual } = await db.auth.getSession();
-
-console.log("ID da sessão:", sessaoAtual.session?.user?.id);
-console.log("ID do contratante:", contratanteLogado);
  const {data,error} = await db
   .from("artist_profiles")
 .select("*");
@@ -515,7 +511,11 @@ if(orcamentoBuscaAplicado !== null &&
   }
 
   const {data,error} = await db
-    .from("contratacoes")
+   const { data: sessaoAtual } = await db.auth.getSession();
+
+console.log("ID da sessão:", sessaoAtual.session?.user?.id);
+console.log("ID do contratante:", contratanteLogado); 
+   .from("contratacoes")
     .insert({
       contratante_id: contratanteLogado,
       orcamento_maximo: orcamentoBuscaAplicado,
