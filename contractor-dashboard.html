@@ -465,6 +465,36 @@ async function carregarContratacoes(contratanteId){
 
  carregarPainel();
 };
+
+ window.recusarContraproposta = async function(id){
+
+ const confirmar = confirm(
+  "Tem certeza de que deseja recusar a contraproposta?\n\n" +
+  "A negociação será encerrada definitivamente."
+ );
+
+ if(!confirmar) return;
+
+ const {error} = await db.rpc(
+  "contratante_recusar_contraproposta",
+  {
+   p_contratacao_id:id
+  }
+ );
+
+ if(error){
+  console.error(error);
+  alert("Não foi possível recusar a contraproposta: " + error.message);
+  return;
+ }
+
+ alert(
+  "Contraproposta recusada.\n\n" +
+  "A negociação foi encerrada e o artista foi notificado."
+ );
+
+ carregarPainel();
+};
 async function sair(){
 
  await db.auth.signOut();
