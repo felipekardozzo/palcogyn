@@ -406,11 +406,26 @@ async function carregarContratacoes(contratanteId){
     <p><strong>Contraproposta:</strong> ${valorContraproposta}</p>
     <p><strong>Valor final:</strong> ${valorFinal}</p>
 
-    ${
+        ${
      item.status === "contraproposta"
       ? `
        <p><strong>Justificativa do artista:</strong>
        ${item.justificativa_contraproposta || "Não informada"}</p>
+
+       <p><strong>Novo cachê solicitado:</strong>
+       ${valorContraproposta}</p>
+
+       <div class="acoes-contratacao">
+        <button class="btn-aceitar"
+         onclick="aceitarContraproposta('${item.id}')">
+         Aceitar contraproposta
+        </button>
+
+        <button class="btn-recusar"
+         onclick="recusarContraproposta('${item.id}')">
+         Recusar contraproposta
+        </button>
+       </div>
       `
       : ""
     }
