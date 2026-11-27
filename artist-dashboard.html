@@ -637,6 +637,13 @@ async function carregarSolicitacoes(){
       <p class="info">Local: ${escapar(item.local_evento)}</p>
       <p class="info">Proposta: R$ ${Number(item.cache_proposto).toLocaleString("pt-BR",{minimumFractionDigits:2})}</p>
       <p class="info">Situação: ${escapar(item.status)}</p>
+      ${item.status === "pendente" ? `
+  <button
+    onclick="aceitarProposta('${item.id}')"
+    style="margin-top:10px;background:#16a34a;">
+    Aceitar proposta
+  </button>
+` : ""}
     </div>
   `).join("");
 }
