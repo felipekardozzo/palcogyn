@@ -1,0 +1,560 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minhas Contratações | PalcoGyn</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+ margin:0;
+ font-family:Arial,sans-serif;
+ background:#080e22;
+ color:white;
+}
+
+header{
+ background:linear-gradient(135deg,#102c50,#075985);
+ padding:22px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ flex-wrap:wrap;
+ gap:12px;
+ border-bottom:1px solid #25638b;
+}
+
+.logo h1{
+ margin:0;
+ color:#38bdf8;
+ letter-spacing:2px;
+}
+
+.logo p{
+ margin:5px 0 0;
+ color:#bae6fd;
+ font-size:12px;
+}
+
+button{
+ border:0;
+ border-radius:8px;
+ padding:12px 18px;
+ background:#0284c7;
+ color:white;
+ font-weight:bold;
+ cursor:pointer;
+}
+
+button:hover{background:#0369a1}
+button:disabled{opacity:.5;cursor:not-allowed}
+
+.container{
+ max-width:1100px;
+ margin:30px auto;
+ padding:15px;
+}
+
+.titulo{
+ color:#38bdf8;
+ margin-bottom:8px;
+}
+
+.subtitulo{
+ color:#cbd5e1;
+ line-height:1.6;
+ margin-bottom:25px;
+}
+
+.contratacao{
+ background:#172438;
+ border:1px solid #293c55;
+ border-radius:14px;
+ padding:22px;
+ margin-bottom:18px;
+}
+
+.contratacao h3{
+ color:#38bdf8;
+ margin-top:0;
+}
+
+.contratacao p{
+ color:#cbd5e1;
+ font-size:14px;
+ line-height:1.6;
+ margin:8px 0;
+ overflow-wrap:anywhere;
+}
+
+.status{
+ display:inline-block;
+ padding:8px 12px;
+ border-radius:20px;
+ background:#263b55;
+ color:#bae6fd;
+ font-size:12px;
+ font-weight:bold;
+ margin:8px 0 15px;
+}
+
+.acoes{
+ display:flex;
+ flex-wrap:wrap;
+ gap:10px;
+ margin-top:18px;
+}
+
+.btn-aceitar{background:#15803d}
+.btn-aceitar:hover{background:#166534}
+
+.btn-recusar{background:#b91c1c}
+.btn-recusar:hover{background:#991b1b}
+
+.pagamento{
+ background:#102f43;
+ border:1px solid #0e7490;
+ border-radius:12px;
+ padding:18px;
+ margin-top:18px;
+}
+
+.pagamento h4{
+ color:#38bdf8;
+ margin-top:0;
+}
+
+.valor{
+ font-size:24px;
+ color:#4ade80;
+ font-weight:bold;
+ margin:12px 0;
+}
+
+.aviso{
+ color:#bae6fd;
+ font-size:13px;
+ line-height:1.6;
+}
+
+.vazio{
+ background:#172438;
+ border:1px solid #293c55;
+ border-radius:14px;
+ padding:25px;
+ text-align:center;
+ color:#cbd5e1;
+}
+
+#mensagem{
+ text-align:center;
+ padding:20px;
+ color:#38bdf8;
+}
+
+footer{
+ text-align:center;
+ padding:25px;
+ color:#64748b;
+ font-size:12px;
+}
+
+@media(max-width:600px){
+ header{padding:16px}
+ .container{margin:15px auto}
+ .contratacao{padding:17px}
+ .acoes button{width:100%}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+ <div class="logo">
+  <h1>PALCOGYN</h1>
+  <p>TALENTOS • EVENTOS • CONEXÕES</p>
+ </div>
+
+ <button onclick="window.location.href='contractor-dashboard.html'">
+  Voltar ao painel
+ </button>
+</header>
+
+<main class="container">
+
+ <h2 class="titulo">Minhas contratações</h2>
+
+ <p class="subtitulo">
+  Acompanhe suas solicitações, negociações e contratações de artistas.
+ </p>
+
+ <div id="listaContratacoes">
+  <div class="vazio">Carregando suas contratações...</div>
+ </div>
+
+ <div id="mensagem"></div>
+
+</main>
+
+<footer>
+ PalcoGyn — Descubra novos talentos.
+</footer>
+
+<script>
+
+const SUPABASE_URL = "https://nocwkiobwjpuygsbnyhn.supabase.co";
+
+// Cole aqui a mesma chave publicável utilizada no contractor-dashboard.html.
+const SUPABASE_KEY = "COLE_AQUI_SUA_CHAVE_PUBLICAVEL";
+
+const db = window.supabase.createClient(
+ SUPABASE_URL,
+ SUPABASE_KEY
+);
+
+let usuarioAtual = null;
+
+function escapar(valor){
+ return String(valor ?? "").replace(/[&<>"']/g, caractere => ({
+  "&":"&amp;",
+  "<":"&lt;",
+  ">":"&gt;",
+  '"':"&quot;",
+  "'":"&#39;"
+ })[caractere]);
+}
+
+function dinheiro(valor){
+ return Number(valor || 0).toLocaleString("pt-BR",{
+  style:"currency",
+  currency:"BRL"
+ });
+}
+
+function taxaServico(cache){
+ return Number((Number(cache || 0) * 0.12).toFixed(2));
+}
+
+function dataFormatada(valor){
+ if(!valor) return "Não informada";
+
+ const partes = String(valor).split("-");
+
+ if(partes.length === 3){
+  return `${partes[2].slice(0,2)}/${partes[1]}/${partes[0]}`;
+ }
+
+ return escapar(valor);
+}
+
+const nomesStatus = {
+ pendente:"Aguardando resposta do artista",
+ contraproposta:"Contraproposta recebida",
+ aguardando_pagamento:"Aguardando pagamento da taxa",
+ recusada:"Negociação recusada",
+ expirada:"Solicitação expirada",
+ cancelada:"Contratação cancelada",
+ confirmada:"Contratação confirmada"
+};
+
+async function iniciar(){
+
+ const {data:{session},error} = await db.auth.getSession();
+
+ if(error || !session){
+  window.location.href="index.html";
+  return;
+ }
+
+ usuarioAtual = session.user;
+
+ const {data:perfil,error:erroPerfil} = await db
+  .from("profiles")
+  .select("nome,tipo")
+  .eq("id",usuarioAtual.id)
+  .maybeSingle();
+
+ if(erroPerfil || !perfil){
+  document.getElementById("mensagem").textContent =
+   "Não foi possível carregar seu perfil.";
+  return;
+ }
+
+ if(perfil.tipo !== "contratante"){
+  await db.auth.signOut();
+  window.location.href="index.html";
+  return;
+ }
+
+ carregarContratacoes();
+}
+
+async function carregarContratacoes(){
+
+ const lista = document.getElementById("listaContratacoes");
+
+ lista.innerHTML = '<div class="vazio">Carregando contratações...</div>';
+
+ const {data:contratacoes,error} = await db
+  .from("contratacoes")
+  .select(`
+   id,
+   criada_em,
+   data_evento,
+   horario_evento,
+   local_evento,
+   tipo_evento,
+   descricao_evento,
+   cache_proposto,
+   cache_contraproposta,
+   cache_final,
+   status,
+   prazo_resposta,
+   prazo_pagamento,
+   artista_id,
+   justificativa_contraproposta
+  `)
+  .eq("contratante_id",usuarioAtual.id)
+  .order("criada_em",{ascending:false});
+
+ if(error){
+  console.error(error);
+  lista.innerHTML = `
+   <div class="vazio">
+    Não foi possível carregar suas contratações.
+    <br><br>${escapar(error.message)}
+   </div>`;
+  return;
+ }
+
+ if(!contratacoes || contratacoes.length === 0){
+  lista.innerHTML = `
+   <div class="vazio">
+    Você ainda não possui solicitações de contratação.
+   </div>`;
+  return;
+ }
+
+ const ids = [...new Set(contratacoes.map(item => item.artista_id))];
+
+ const {data:artistas,error:erroArtistas} = await db
+  .from("profiles")
+  .select("id,nome")
+  .in("id",ids);
+
+ if(erroArtistas){
+  console.error(erroArtistas);
+ }
+
+ const nomes = {};
+
+ (artistas || []).forEach(artista => {
+  nomes[artista.id] = artista.nome;
+ });
+
+ lista.innerHTML = contratacoes.map(item => {
+
+  const artista = nomes[item.artista_id] || "Artista";
+  const cacheFinal = item.cache_final ?? (
+   item.status === "contraproposta"
+    ? item.cache_contraproposta
+    : item.cache_proposto
+  );
+
+  const valorTaxa = taxaServico(cacheFinal);
+
+  const aguardandoPagamento =
+   item.status === "aguardando_pagamento";
+
+  const contraproposta =
+   item.status === "contraproposta";
+
+  return `
+   <article class="contratacao">
+
+    <h3>${escapar(artista)}</h3>
+
+    <span class="status">
+     ${escapar(nomesStatus[item.status] || item.status)}
+    </span>
+
+    <p><strong>Tipo de evento:</strong>
+     ${escapar(item.tipo_evento || "Não informado")}</p>
+
+    <p><strong>Data:</strong>
+     ${dataFormatada(item.data_evento)}</p>
+
+    <p><strong>Horário:</strong>
+     ${escapar(item.horario_evento || "Não informado")}</p>
+
+    <p><strong>Local:</strong>
+     ${escapar(item.local_evento || "Não informado")}</p>
+
+    <p><strong>Descrição:</strong>
+     ${escapar(item.descricao_evento || "Não informada")}</p>
+
+    <p><strong>Cachê inicial:</strong>
+     ${dinheiro(item.cache_proposto)}</p>
+
+    ${
+     item.cache_contraproposta != null
+      ? `<p><strong>Contraproposta:</strong>
+         ${dinheiro(item.cache_contraproposta)}</p>`
+      : ""
+    }
+
+    ${
+     contraproposta
+      ? `
+       <p><strong>Justificativa do artista:</strong><br>
+        ${escapar(item.justificativa_contraproposta || "Não informada")}
+       </p>
+
+       <p><strong>Novo cachê solicitado:</strong>
+        ${dinheiro(item.cache_contraproposta)}</p>
+
+       <div class="acoes">
+        <button class="btn-aceitar"
+         onclick="aceitarContraproposta('${item.id}')">
+         Aceitar contraproposta
+        </button>
+
+        <button class="btn-recusar"
+         onclick="recusarContraproposta('${item.id}')">
+         Recusar contraproposta
+        </button>
+       </div>
+      `
+      : ""
+    }
+
+    ${
+     aguardandoPagamento
+      ? `
+       <div class="pagamento">
+        <h4>Pagamento da taxa de serviço</h4>
+
+        <p><strong>Cachê final:</strong>
+         ${dinheiro(cacheFinal)}</p>
+
+        <p><strong>Taxa de serviço PalcoGyn (12%):</strong></p>
+
+        <div class="valor">${dinheiro(valorTaxa)}</div>
+
+        <p class="aviso">
+         Para concluir a contratação, realize o pagamento da taxa
+         de serviço e encaminhe o comprovante ao setor financeiro
+         do PalcoGyn pelo canal de pagamento informado pela plataforma.
+         <br><br>
+         Você tem até 2 horas após a aceitação para enviar o comprovante.
+         A contratação será oficialmente confirmada após a validação
+         do pagamento pela administração.
+        </p>
+
+        ${
+         item.prazo_pagamento
+          ? `<p><strong>Prazo para pagamento:</strong>
+             ${new Date(item.prazo_pagamento).toLocaleString("pt-BR")}
+            </p>`
+          : ""
+        }
+       </div>
+      `
+      : ""
+    }
+
+   </article>
+  `;
+
+ }).join("");
+}
+
+window.aceitarContraproposta = async function(id){
+
+ const {data:registro,error:erroConsulta} = await db
+  .from("contratacoes")
+  .select("cache_contraproposta")
+  .eq("id",id)
+  .eq("contratante_id",usuarioAtual.id)
+  .eq("status","contraproposta")
+  .maybeSingle();
+
+ if(erroConsulta || !registro){
+  alert("Esta contraproposta não está mais disponível.");
+  carregarContratacoes();
+  return;
+ }
+
+ const cacheFinal = Number(registro.cache_contraproposta);
+ const taxa = taxaServico(cacheFinal);
+
+ const mensagem =
+  "CONFIRMAÇÃO DA CONTRATAÇÃO\n\n" +
+  "Para concluir a contratação, será necessário confirmar o pagamento " +
+  "da taxa de serviço do PalcoGyn, correspondente a 12% do cachê final.\n\n" +
+  "Cachê final: " + dinheiro(cacheFinal) + "\n" +
+  "Taxa de serviço PalcoGyn (12%): " + dinheiro(taxa) + "\n\n" +
+  "Após a aceitação, você terá até 2 horas para realizar o pagamento " +
+  "e encaminhar o comprovante ao setor financeiro do PalcoGyn, " +
+  "pelo canal informado pela plataforma.\n\n" +
+  "A contratação será oficialmente confirmada após a validação " +
+  "do pagamento pela administração.\n\n" +
+  "Deseja confirmar a aceitação?";
+
+ if(!confirm(mensagem)) return;
+
+ const {error} = await db.rpc(
+  "contratante_aceitar_contraproposta",
+  {p_contratacao_id:id}
+ );
+
+ if(error){
+  console.error(error);
+  alert("Não foi possível aceitar a contraproposta: " + error.message);
+  return;
+ }
+
+ alert(
+  "Contraproposta aceita!\n\n" +
+  "O prazo de 2 horas para pagamento foi iniciado."
+ );
+
+ carregarContratacoes();
+};
+
+window.recusarContraproposta = async function(id){
+
+ const confirmar = confirm(
+  "Deseja realmente recusar a contraproposta?\n\n" +
+  "A negociação será encerrada definitivamente."
+ );
+
+ if(!confirmar) return;
+
+ const {error} = await db.rpc(
+  "contratante_recusar_contraproposta",
+  {p_contratacao_id:id}
+ );
+
+ if(error){
+  console.error(error);
+  alert("Não foi possível recusar a contraproposta: " + error.message);
+  return;
+ }
+
+ alert("Contraproposta recusada. O artista será notificado.");
+
+ carregarContratacoes();
+};
+
+iniciar();
+
+</script>
+
+</body>
+</html>
