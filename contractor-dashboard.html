@@ -296,7 +296,131 @@ async function carregarPainel(){
   "Olá, "+(perfil.nome || "Contratante")+"!";
 
 }
+async function carregarContratacoes(contratanteId){
 
+ const lista = document.getElementById("listaContratacoes");
+
+ lista.innerHTML = `
+  <div class="sem-contratacoes">
+   Carregando suas contratações...
+  </div>
+ `;
+
+ const {data:contratacoes,error} = await db
+  .from("contratacoes")
+  .select(`
+   id,
+   data_evento,
+   horario_evento,
+   local_evento,
+   tipo_evento,
+   descricao_evento,
+   cache_proposto,
+   cache_contraproposta,
+   cache_final,
+   status,
+   prazo_resposta,
+   artista_id,
+   justificativa_contraproposta
+  `)
+  .eq("contratante_id",contratanteId)
+  .order("criada_em",{ascending:false});
+
+ if(error){
+  console.error(error);
+  lista.innerHTML = `
+   <div class="sem-contratacoes">
+    Não foi possível carregar suas contratações.
+   </div>
+  `;
+  return;
+ }
+
+ if(!contratacoes || contratacoes.length === 0){
+  lista.innerHTML = `
+   <div class="sem-contratacoes">
+    Você ainda não possui solicitações de contratação.
+   </div>
+  `;
+  return;
+ }
+
+ const artistaIds = [...new Set(
+  contratacoes.map(item => item.artista_id)
+ )];
+
+ const {data:artistas} = await db
+  .from("profiles")
+  .select("id,nome")
+  .in("id",artistaIds);
+
+ const nomesArtistas = {};
+
+ (artistas || []).forEach(artista => {
+  nomesArtistas[artista.id] = artista.nome;
+ });
+
+ const statusNomes = {
+  pendente:"Aguardando resposta do artista",
+  contraproposta:"Contraproposta recebida",
+  aguardando_pagamento:"Aguardando pagamento",
+  recusada:"Negociação recusada",
+  expirada:"Solicitação expirada",
+  cancelada:"Contratação cancelada",
+  confirmada:"Contratação confirmada"
+ };
+
+ lista.innerHTML = contratacoes.map(item => {
+
+  const artista = nomesArtistas[item.artista_id] || "Artista";
+
+  const valorProposto = Number(item.cache_proposto || 0)
+   .toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+
+  const valorContraproposta = item.cache_contraproposta
+   ? Number(item.cache_contraproposta).toLocaleString(
+      "pt-BR",{style:"currency",currency:"BRL"}
+     )
+   : "Não informado";
+
+  const valorFinal = item.cache_final
+   ? Number(item.cache_final).toLocaleString(
+      "pt-BR",{style:"currency",currency:"BRL"}
+     )
+   : "Ainda não definido";
+
+  return `
+   <div class="contratacao">
+
+    <h3>${artista}</h3>
+
+    <span class="status-contratacao">
+     ${statusNomes[item.status] || item.status}
+    </span>
+
+    <p><strong>Evento:</strong> ${item.tipo_evento || "Não informado"}</p>
+    <p><strong>Data:</strong> ${item.data_evento || "Não informada"}</p>
+    <p><strong>Horário:</strong> ${item.horario_evento || "Não informado"}</p>
+    <p><strong>Local:</strong> ${item.local_evento || "Não informado"}</p>
+    <p><strong>Cachê inicial:</strong> ${valorProposto}</p>
+    <p><strong>Contraproposta:</strong> ${valorContraproposta}</p>
+    <p><strong>Valor final:</strong> ${valorFinal}</p>
+
+    ${
+     item.status === "contraproposta"
+      ? `
+       <p><strong>Justificativa do artista:</strong>
+       ${item.justificativa_contraproposta || "Não informada"}</p>
+      `
+      : ""
+    }
+
+   </div>
+  `;
+
+ }).join("");
+
+}
 async function sair(){
 
  await db.auth.signOut();
