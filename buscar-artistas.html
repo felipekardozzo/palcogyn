@@ -510,12 +510,13 @@ if(orcamentoBuscaAplicado !== null &&
     return;
   }
 
-  const {data,error} = await db
-   const { data: sessaoAtual } = await db.auth.getSession();
+  const { data: sessaoAtual } = await db.auth.getSession();
 
 console.log("ID da sessão:", sessaoAtual.session?.user?.id);
-console.log("ID do contratante:", contratanteLogado); 
-   .from("contratacoes")
+console.log("ID do contratante:", contratanteLogado);
+
+const {data,error} = await db
+  .from("contratacoes")
     .insert({
       contratante_id: contratanteLogado,
       orcamento_maximo: orcamentoBuscaAplicado,
