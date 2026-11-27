@@ -272,7 +272,7 @@ async function buscarArtistas(){
     if(estilo && !estilos.includes(estilo)) return false;
     if(local && !cidadeEstado.includes(local)) return false;
 
-    if(minimo !== null && (cache === null || cache < minimo)){
+    if(minimo !== null && (cache === null || cache > minimo)){
       return false;
     }
 
