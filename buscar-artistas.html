@@ -115,7 +115,18 @@ button{
  <section class="filtros">
   <h2>Filtros de busca</h2>
 
-  <div class="grid">
+  
+<div class="grid">
+
+  <div>
+    <label for="nome">Nome do Artista</label>
+    <input
+      id="nome"
+      type="text"
+      placeholder="Digite o nome do artista"
+    >
+  </div>
+
   <div>
     <label for="categoria">Categoria</label>
     <select id="categoria">
@@ -135,6 +146,37 @@ button{
       <option value="Coreografo(a)">Coreografo(a)</option>
     </select>
   </div>
+
+  <div>
+    <label for="estilo">Estilo Musical</label>
+    <input
+      id="estilo"
+      type="text"
+      placeholder="Digite o estilo musical"
+    >
+  </div>
+
+  <div>
+    <label for="local">Cidade</label>
+    <input
+      id="local"
+      type="text"
+      placeholder="Digite a cidade"
+    >
+  </div>
+
+  <div>
+    <label for="valorMin">Cachê Proposta (R$)</label>
+    <input
+      id="valorMin"
+      type="number"
+      min="0"
+      step="0.01"
+      placeholder="Digite sua proposta"
+    >
+  </div>
+
+</div>
 
   <div>
    <label for="valorMin">Cachê Proposta (R$)</label>
