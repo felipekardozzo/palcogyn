@@ -700,13 +700,7 @@ document.addEventListener("keydown",function(event){
 
 });
 iniciar();
- window.aceitarProposta = async function(id){
-
-  const confirmar = confirm(
-    "Deseja aceitar a proposta e iniciar o prazo de 2 horas para o pagamento da Taxa de Confirmação da Contratação?"
-  );
-
-  if(!confirmar) return;
+window.aceitarProposta = async function(id){
 
   const {error} = await db.rpc(
     "artista_aceitar_proposta",
@@ -721,7 +715,10 @@ iniciar();
     return;
   }
 
-  alert("Proposta aceita! O contratante tem 2 horas para realizar o pagamento da Taxa de Confirmação da Contratação.");
+  alert(
+    "Proposta aceita com sucesso!\n\n" +
+    "O contratante foi avisado. Aguarde a confirmação da contratação."
+  );
 
   location.reload();
 };
