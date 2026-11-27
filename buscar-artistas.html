@@ -524,8 +524,8 @@ console.log("ID do contratante:", contratanteLogado);
 const {data,error} = await db
   .from("contratacoes")
     .insert({
-      contratante_id: contratanteLogado,
-      orcamento_maximo: orcamentoBuscaAplicado,
+     contratante_id: user.id,
+     orcamento_maximo: orcamentoBuscaAplicado,
       artista_id: artistaSelecionado.user_id,
       data_evento: dataEvento,
       horario_evento: horarioEvento || null,
