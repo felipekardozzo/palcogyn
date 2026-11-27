@@ -490,14 +490,17 @@ async function enviarSolicitacaoContratacao(){
   return;
 }
 
+if(!dataEvento || !localEvento ||
+   !Number.isFinite(cacheProposto) || cacheProposto <= 0){
+  alert("Preencha a data, o local e um valor de proposta válido.");
+  return;
+}
+
 if(orcamentoBuscaAplicado !== null &&
    cacheProposto > orcamentoBuscaAplicado){
   alert("A proposta não pode ultrapassar o orçamento máximo informado.");
   return;
 }
-    alert("Preencha a data, o local e um valor de proposta válido.");
-    return;
-  }
 
   const hoje = new Date();
   hoje.setHours(0,0,0,0);
