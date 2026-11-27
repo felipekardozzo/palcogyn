@@ -653,6 +653,8 @@ async function carregarSolicitacoes(){
     </div>
   `).join("");
  function atualizarContadores(){
+  setInterval(atualizarContadores, 1000);
+  atualizarContadores();
 
   document.querySelectorAll(".contador-prazo").forEach(el => {
 
