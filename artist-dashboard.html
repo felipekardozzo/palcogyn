@@ -756,6 +756,88 @@ window.aceitarProposta = async function(id){
 
   location.reload();
 };
+ // ENVIAR CONTRAPROPOSTA
+window.enviarContraproposta = async function(id){
+
+  const valorTexto = prompt(
+    "Informe o novo valor do cachê (exemplo: 1500):"
+  );
+
+  if(valorTexto === null) return;
+
+  const valor = Number(valorTexto.replace(",", "."));
+
+  if(!Number.isFinite(valor) || valor <= 0){
+    alert("Informe um valor válido.");
+    return;
+  }
+
+  const justificativa = prompt(
+    "Explique o motivo da contraproposta:"
+  );
+
+  if(justificativa === null) return;
+
+  if(!justificativa.trim()){
+    alert("A justificativa é obrigatória.");
+    return;
+  }
+
+  const {error} = await db.rpc(
+    "artista_enviar_contraproposta",
+    {
+      p_contratacao_id: id,
+      p_valor: valor,
+      p_justificativa: justificativa.trim()
+    }
+  );
+
+  if(error){
+    alert("Erro ao enviar contraproposta: " + error.message);
+    return;
+  }
+
+  alert("Contraproposta enviada com sucesso!");
+  location.reload();
+};
+
+
+// RECUSAR PROPOSTA
+window.recusarProposta = async function(id){
+
+  const motivo = prompt(
+    "Informe o motivo da recusa:"
+  );
+
+  if(motivo === null) return;
+
+  if(!motivo.trim()){
+    alert("O motivo da recusa é obrigatório.");
+    return;
+  }
+
+  if(!confirm(
+    "Confirma a recusa desta proposta?"
+  )){
+    return;
+  }
+
+  const {error} = await db.rpc(
+    "artista_recusar_proposta",
+    {
+      p_contratacao_id: id,
+      p_motivo: motivo.trim()
+    }
+  );
+
+  if(error){
+    alert("Erro ao recusar proposta: " + error.message);
+    return;
+  }
+
+  alert("Recusa enviada com sucesso!");
+  location.reload();
+};
 </script>
 
 </body>
