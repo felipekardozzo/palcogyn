@@ -436,6 +436,35 @@ async function carregarContratacoes(contratanteId){
  }).join("");
 
 }
+ window.aceitarContraproposta = async function(id){
+
+ const confirmar = confirm(
+  "Deseja aceitar a contraproposta do artista?\n\n" +
+  "O valor será definido como cachê final e o prazo de pagamento será de 2 horas."
+ );
+
+ if(!confirmar) return;
+
+ const {error} = await db.rpc(
+  "contratante_aceitar_contraproposta",
+  {
+   p_contratacao_id:id
+  }
+ );
+
+ if(error){
+  console.error(error);
+  alert("Não foi possível aceitar a contraproposta: " + error.message);
+  return;
+ }
+
+ alert(
+  "Contraproposta aceita com sucesso!\n\n" +
+  "O artista foi notificado. O prazo de pagamento é de 2 horas."
+ );
+
+ carregarPainel();
+};
 async function sair(){
 
  await db.auth.signOut();
