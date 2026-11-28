@@ -154,12 +154,38 @@ footer {
                 O módulo financeiro será organizado nesta página,
                 sem alterar as funções já existentes da plataforma.
             </p>
+                </section>
+
+        <section class="panel">
+            <h3>WhatsApp financeiro</h3>
+
+            <p class="muted">
+                Número utilizado para receber comprovantes de pagamento
+                e atender os contratantes do PalcoGyn.
+            </p>
+
+            <label for="whatsappFinanceiro">
+                Número de WhatsApp:
+            </label>
+
+            <input
+                type="tel"
+                id="whatsappFinanceiro"
+                value="062991743299"
+                placeholder="Ex.: 62999999999"
+                style="display:block;width:100%;max-width:400px;padding:12px;margin:10px 0;border-radius:7px;border:1px solid #8795a8;"
+            >
+
+            <button type="button" onclick="salvarWhatsApp()">
+                Salvar número
+            </button>
+
+            <p id="whatsappMensagem" class="muted"></p>
         </section>
 
     </div>
 
 </main>
-
 <footer>
     PALCOGYN © 2026 — Descubra novos talentos
 </footer>
