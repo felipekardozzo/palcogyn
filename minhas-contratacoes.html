@@ -509,7 +509,20 @@ window.aceitarContraproposta = async function(id){
  }
 
  const cacheFinal = Number(registro.cache_contraproposta);
- const taxa = taxaServico(cacheFinal);
+
+const { data: configComissao, error: erroComissao } = await db
+    .from("platform_config")
+    .select("commission_percent")
+    .eq("id", 1)
+    .single();
+
+if (erroComissao || !configComissao) {
+    alert("Não foi possível consultar a comissão da plataforma.");
+    return;
+}
+
+const percentualComissao = Number(configComissao.commission_percent);
+const taxa = Number((cacheFinal * percentualComissao / 100).toFixed(2));
 
  const mensagem =
   "CONFIRMAÇÃO DA CONTRATAÇÃO\n\n" +
