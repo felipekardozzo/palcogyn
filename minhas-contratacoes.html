@@ -605,6 +605,7 @@ window.enviarComprovanteWhatsApp = async function(id) {
         );
 
         const taxa = taxaServico(cacheFinal);
+        const valorArtista = cacheFinal - taxa;
 
         let telefone = String(config.whatsapp_financeiro).replace(/\D/g, "");
 
@@ -624,8 +625,9 @@ window.enviarComprovanteWhatsApp = async function(id) {
             "Evento: " + contratacao.tipo_evento + "\n" +
             "Data: " + contratacao.data_evento + "\n" +
             "Local: " + contratacao.local_evento + "\n" +
-            "Cachê final: " + dinheiro(cacheFinal) + "\n" +
-            "Taxa de serviço (12%): " + dinheiro(taxa) + "\n\n" +
+           "Cachê final: " + dinheiro(cacheFinal) + "\n" +
+            "Taxa de serviço (12%): " + dinheiro(taxa) + "\n" +
+            "Cachê a repassar ao artista: " + dinheiro(valorArtista) + "\n\n" +
             "Segue o comprovante em anexo para conferência.";
 
         const link = "https://wa.me/" + telefone +
