@@ -516,7 +516,7 @@ window.aceitarContraproposta = async function(id){
   "Para concluir a contratação, será necessário confirmar o pagamento " +
   "da taxa de serviço do PalcoGyn.\n\n" +
   "Cachê final: " + dinheiro(cacheFinal) + "\n" +
-  "Taxa de serviço PalcoGyn (12%): " + dinheiro(taxa) + "\n\n" +
+  "Taxa de serviço PalcoGyn (" + percentualComissao + "%): " + dinheiro(taxa) + "\n\n" +
   "Após a aceitação, realize o pagamento " +
   "e encaminhar o comprovante ao setor financeiro do PalcoGyn, " +
   "pelo canal informado pela plataforma.\n\n" +
@@ -641,7 +641,7 @@ const percentualComissao = contratacao.commission_percent_applied;
     "Data: " + contratacao.data_evento + "\n" +
     "Local: " + contratacao.local_evento + "\n" +
     "Cachê final: " + dinheiro(cacheFinal) + "\n" +
-    "Taxa de serviço (12%): " + dinheiro(taxa) + "\n" +
+    "Taxa de serviço (" + percentualComissao + "%): " + dinheiro(taxa) + "\n" +
     "Cachê a repassar ao artista: " + dinheiro(valorArtista) + "\n\n" +
     "Segue o comprovante em anexo para conferência.";
 
