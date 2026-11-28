@@ -201,6 +201,23 @@ const db = window.supabase.createClient(
     SUPABASE_KEY
 );
 
+async function carregarWhatsApp() {
+    const { data, error } = await db
+        .from("platform_config")
+        .select("whatsapp_financeiro")
+        .eq("id", 1)
+        .single();
+
+    if (error) {
+        document.getElementById("whatsappMensagem").innerText =
+            "Erro ao carregar WhatsApp: " + error.message;
+        return;
+    }
+
+    document.getElementById("whatsappFinanceiro").value =
+        data.whatsapp_financeiro || "";
+}
+
 async function verificarAcesso() {
     try {
         const { data, error } = await db.auth.getSession();
