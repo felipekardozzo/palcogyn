@@ -369,8 +369,15 @@ artist_net_amount
     : item.cache_proposto
   );
 
-  const valorTaxa = taxaServico(cacheFinal);
-  const valorArtista = cacheFinal - valorTaxa;
+  const valorTaxa = item.commission_amount != null
+    ? Number(item.commission_amount)
+    : null;
+
+const valorArtista = item.artist_net_amount != null
+    ? Number(item.artist_net_amount)
+    : null;
+
+const percentualComissao = item.commission_percent_applied;
 
   const aguardandoPagamento =
    item.status === "aguardando_pagamento";
