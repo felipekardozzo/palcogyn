@@ -314,6 +314,24 @@ async function salvarComissao() {
     mensagem.innerText = "Comissão atualizada com sucesso!";
 }
 
+async function carregarComissao() {
+    const campo = document.getElementById("commissionPercent");
+    const mensagem = document.getElementById("comissaoMensagem");
+
+    const { data, error } = await db
+        .from("platform_config")
+        .select("commission_percent")
+        .eq("id", 1)
+        .single();
+
+    if (error) {
+        mensagem.innerText = "Erro ao carregar comissão: " + error.message;
+        return;
+    }
+
+    campo.value = data.commission_percent;
+}
+
 
 async function verificarAcesso() {
     try {
