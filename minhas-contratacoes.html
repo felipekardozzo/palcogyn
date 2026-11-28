@@ -317,7 +317,10 @@ async function carregarContratacoes(){
    prazo_resposta,
    prazo_pagamento,
    artista_id,
-   justificativa_contraproposta
+   justificativa_contraproposta,
+   commission_percent_applied,
+commission_amount,
+artist_net_amount
   `)
   .eq("contratante_id",usuarioAtual.id)
   .order("criada_em",{ascending:false});
