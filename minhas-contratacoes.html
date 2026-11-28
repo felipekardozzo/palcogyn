@@ -453,9 +453,9 @@ const percentualComissao = item.commission_percent_applied;
         <p><strong>Cachê final:</strong>
          ${dinheiro(cacheFinal)}</p>
 
-        <p><strong>Taxa de serviço PalcoGyn (12%):</strong></p>
+        <p><strong>Taxa de serviço PalcoGyn (${percentualComissao ?? 0}%):</strong></p>
 
-        <div class="valor">${dinheiro(valorTaxa)}</div>
+        <div class="valor">${valorTaxa != null ? dinheiro(valorTaxa) : "A definir"}</div>
 
         <p class="aviso">
          Para concluir a contratação, realize o pagamento da taxa
