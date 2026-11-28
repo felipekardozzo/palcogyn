@@ -558,7 +558,89 @@ window.recusarContraproposta = async function(id){
 
  carregarContratacoes();
 };
+};
 
+window.enviarComprovanteWhatsApp = async function(id) {
+
+    try {
+
+        const { data: contratacao, error } = await db
+            .from("contratacoes")
+            .select("*")
+            .eq("id", id)
+            .eq("contratante_id", usuarioAtual.id)
+            .maybeSingle();
+
+        if (error || !contratacao) {
+            alert("Não foi possível localizar esta contratação.");
+            return;
+        }
+
+        if (contratacao.status !== "aguardando_pagamento") {
+            alert("Esta contratação não está aguardando pagamento.");
+            return;
+        }
+
+        const { data: artista } = await db
+            .from("profiles")
+            .select("nome")
+            .eq("id", contratacao.artista_id)
+            .maybeSingle();
+
+        const { data: config, error: erroConfig } = await db
+            .from("platform_config")
+            .select("whatsapp_financeiro")
+            .eq("id", 1)
+            .single();
+
+        if (erroConfig || !config || !config.whatsapp_financeiro) {
+            alert("Não foi possível carregar o WhatsApp financeiro.");
+            return;
+        }
+
+        const cacheFinal = Number(
+            contratacao.cache_final ??
+            contratacao.cache_contraproposta ??
+            contratacao.cache_proposto
+        );
+
+        const taxa = taxaServico(cacheFinal);
+
+        let telefone = String(config.whatsapp_financeiro).replace(/\D/g, "");
+
+        if (telefone.startsWith("0")) {
+            telefone = telefone.substring(1);
+        }
+
+        if (!telefone.startsWith("55")) {
+            telefone = "55" + telefone;
+        }
+
+        const mensagem =
+            "Olá, equipe financeira do PalcoGyn! Estou enviando o comprovante de pagamento da taxa de serviço.\n\n" +
+            "Código da contratação: " + contratacao.id + "\n" +
+            "Artista: " + (artista?.nome || "Não informado") + "\n" +
+            "Evento: " + contratacao.tipo_evento + "\n" +
+            "Data: " + contratacao.data_evento + "\n" +
+            "Local: " + contratacao.local_evento + "\n" +
+            "Cachê final: " + dinheiro(cacheFinal) + "\n" +
+            "Taxa de serviço (12%): " + dinheiro(taxa) + "\n\n" +
+            "Segue o comprovante em anexo para conferência.";
+
+        const link = "https://wa.me/" + telefone +
+            "?text=" + encodeURIComponent(mensagem);
+
+        window.location.href = link;
+
+    } catch (erro) {
+
+        alert("Erro ao preparar o WhatsApp: " + erro.message);
+
+    }
+
+};
+
+iniciar();
 iniciar();
 
 </script>
