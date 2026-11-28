@@ -176,7 +176,7 @@ footer {
                 style="display:block;width:100%;max-width:400px;padding:12px;margin:10px 0;border-radius:7px;border:1px solid #8795a8;"
             >
 
-            <button type="button" onclick="salvarWhatsApp()">
+            <button type="button" onclick="atsApp()">
                 Salvar número
             </button>
 
@@ -277,6 +277,43 @@ async function salvarWhatsApp() {
     campo.value = numero;
     mensagem.innerText = "Número do WhatsApp atualizado com sucesso!";
 }
+    
+async function salvarComissao() {
+    const campo = document.getElementById("commissionPercent");
+    const mensagem = document.getElementById("comissaoMensagem");
+
+    const percentual = Number(campo.value.replace(",", "."));
+
+    if (!Number.isFinite(percentual) || percentual < 0 || percentual > 100) {
+        mensagem.innerText = "Informe um percentual entre 0 e 100.";
+        return;
+    }
+
+    const { data: userData } = await db.auth.getUser();
+
+    if (!userData.user) {
+        mensagem.innerText = "Usuário não autenticado.";
+        return;
+    }
+
+    const { error } = await db
+        .from("platform_config")
+        .update({
+            commission_percent: percentual,
+            updated_at: new Date().toISOString(),
+            updated_by: userData.user.id
+        })
+        .eq("id", 1);
+
+    if (error) {
+        mensagem.innerText = "Erro ao salvar comissão: " + error.message;
+        return;
+    }
+
+    campo.value = percentual;
+    mensagem.innerText = "Comissão atualizada com sucesso!";
+}
+
 
 async function verificarAcesso() {
     try {
