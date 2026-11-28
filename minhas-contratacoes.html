@@ -614,8 +614,13 @@ window.enviarComprovanteWhatsApp = async function(id) {
             contratacao.cache_proposto
         );
 
-        const taxa = taxaServico(cacheFinal);
-        const valorArtista = cacheFinal - taxa;
+       const taxa = Number(contratacao.commission_amount ?? 0);
+
+const valorArtista = Number(
+    contratacao.artist_net_amount ?? 0
+);
+
+const percentualComissao = contratacao.commission_percent_applied;
 
         let telefone = String(config.whatsapp_financeiro).replace(/\D/g, "");
 
