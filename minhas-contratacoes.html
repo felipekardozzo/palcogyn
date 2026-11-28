@@ -367,7 +367,7 @@ async function carregarContratacoes(){
   );
 
   const valorTaxa = taxaServico(cacheFinal);
-  const valorArtista = cacheFinal - taxa;
+  const valorArtista = cacheFinal - valorTaxa;
 
   const aguardandoPagamento =
    item.status === "aguardando_pagamento";
