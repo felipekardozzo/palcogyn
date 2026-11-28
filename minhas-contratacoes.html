@@ -455,14 +455,22 @@ async function carregarContratacoes(){
          do pagamento pela administração.
         </p>
 
-        ${
-         item.prazo_pagamento
-          ? `<p><strong>Prazo para pagamento:</strong>
-             ${new Date(item.prazo_pagamento).toLocaleString("pt-BR")}
+               ${
+          item.prazo_pagamento
+           ? `<p><strong>Prazo para pagamento:</strong>
+              ${new Date(item.prazo_pagamento).toLocaleString("pt-BR")}
             </p>`
           : ""
         }
-       </div>
+
+        <div class="acoes">
+         <button type="button"
+          onclick="enviarComprovanteWhatsApp('${item.id}')">
+          Enviar comprovante pelo WhatsApp
+         </button>
+        </div>
+
+        </div>
       `
       : ""
     }
