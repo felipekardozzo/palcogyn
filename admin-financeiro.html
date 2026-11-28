@@ -218,6 +218,37 @@ async function carregarWhatsApp() {
         data.whatsapp_financeiro || "";
 }
 
+async function salvarWhatsApp() {
+    const campo = document.getElementById("whatsappFinanceiro");
+    const mensagem = document.getElementById("whatsappMensagem");
+
+    const numero = campo.value.replace(/\D/g, "");
+
+    if (numero.length < 12 || numero.length > 13) {
+        mensagem.innerText = "Informe um número válido com DDD e código do Brasil.";
+        return;
+    }
+
+    const { data: userData } = await db.auth.getUser();
+
+    const { error } = await db
+        .from("platform_config")
+        .update({
+            whatsapp_financeiro: numero,
+            updated_at: new Date().toISOString(),
+            updated_by: userData.user.id
+        })
+        .eq("id", 1);
+
+    if (error) {
+        mensagem.innerText = "Erro ao salvar: " + error.message;
+        return;
+    }
+
+    campo.value = numero;
+    mensagem.innerText = "Número do WhatsApp atualizado com sucesso!";
+}
+
 async function verificarAcesso() {
     try {
         const { data, error } = await db.auth.getSession();
